@@ -139,13 +139,10 @@ fn load_recursive(
             let file_name = path.file_name().and_then(|n| n.to_str());
             if let (Some(file_name), Some(parent)) = (file_name, path.parent()) {
                 if file_name == MANIFEST_FILE {
-                    // Prefix is needed to fix links to point to Theseus's blog repository,
-                    // which is at <https://theseus-os.github.io/blog>, not <https://theseus-os.github.io>.
-                    let prefix = PathBuf::from("blog");
-                    // let prefix = parent
-                    //     .strip_prefix(base)
-                    //     .map(|p| p.to_path_buf())
-                    //     .unwrap_or_else(|_| PathBuf::new());
+                    let prefix = parent
+                        .strip_prefix(base)
+                        .map(|p| p.to_path_buf())
+                        .unwrap_or_else(|_| PathBuf::new());
                     blogs.push(Blog::load(prefix, parent)?);
                 }
             }
