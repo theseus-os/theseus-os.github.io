@@ -41,11 +41,11 @@ jobs:
             cargo-build-${{ steps.rustc.outputs.version }}-
 
         ## This adds the necessary base URL for "https://theseus-os.github.io/blog" to ensure links work in GitHub Pages.
-      - run: sed -i 's/<head>/<head>\n    <base href="\/blog\/">/' 'templates/layout.hbs'
+      # - run: sed -i 's/<head>/<head>\n    <base href="\/blog\/">/' 'templates/layout.hbs'
       - run: cargo run
       # - run: cp _config.yml ./site/
       # - run: cp CNAME ./site/
-      # - run: touch site/.nojekyll
+      - run: touch site/.nojekyll
       - uses: JamesIves/github-pages-deploy-action@releases/v3
         if: github.ref == 'refs/heads/main'
         with:
