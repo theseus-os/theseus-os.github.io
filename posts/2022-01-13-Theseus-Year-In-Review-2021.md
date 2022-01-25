@@ -7,7 +7,7 @@ release: false
 
 ## Theseus's First Full Year 
 
-Although 2021 not the first year of Theseus development, it _was_ the first year in which:
+Although 2021 not the first year of Theseus development, it _was_ the first whole year in which:
 1. Theseus was fully open-sourced and publically known to the community.
 2. Theseus received interest from academic and industry collaborators.
 3. Theseus received funding for open-source development from industry (yay!).
@@ -17,8 +17,8 @@ Although 2021 not the first year of Theseus development, it _was_ the first year
 Our [SOSP paper](https://www.usenix.org/conference/osdi20/presentation/boos) describing Theseus's research goals and novel design was published back in late 2020. 
 Since then, we've received lots of interest from various academic institutions and industry folks beyond our home institutions of Yale University and Rice University.
 
-
-<!-- This ultimately culminated TODO: discuss Futurewei sponsorship  -->
+### Collaboration & Funding with Futurewei
+As with many other projects in the Rust open-source community, Futurewei has identified Theseus as a project of interest that  This ultimately culminated TODO: discuss Futurewei sponsorship  -->
 
 
 The rest of this blog entry is a work in progress. Check back soon!
@@ -36,7 +36,7 @@ The rest of this blog entry is a work in progress. Check back soon!
 
 Beyond our usual contributors, we had several newcomers from both Yale University and the open-source community at large who generously devoted their time to make some excellent improvements to Theseus. 
 Our sincere thanks to:
- * Futurewei Technologies, especially [Sid Askary](https://www.linkedin.com/in/sid-askary-21a962) and [Yong He](https://www.linkedin.com/in/yong-he-1334902), for generously offering technical advise and funding for Theseus development.
+ * Futurewei Technologies, especially [Sid Askary](https://www.linkedin.com/in/sid-askary-21a962) and [Yong He](https://www.linkedin.com/in/yong-he-1334902), for generously offering technical advice and funding for Theseus development.
  * [@apogeeoak](https://github.com/apogeeoak), who improved documentation quality and implemented GitHub workflows to autogenerate docs.
  * [Vikram Mullick](https://github.com/vikrammullick), who began and nearly finished support for running WASM+WASI binaries atop Theseus.
  * [Jacob Earle](https://github.com/jacob-earle), who began support for logging output on ARM microcontrollers and a pseudo-real time scheduling algorithm for Theseus.
