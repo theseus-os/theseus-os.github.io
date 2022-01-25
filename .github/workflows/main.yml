@@ -41,8 +41,8 @@ jobs:
             cargo-build-${{ steps.rustc.outputs.version }}-
 
       - run: cargo run
-      - run: cp CNAME ./site/
-      - run: touch site/.nojekyll
+      # - run: cp CNAME ./site/
+      # - run: touch site/.nojekyll
       - uses: JamesIves/github-pages-deploy-action@releases/v3
         if: github.ref == 'refs/heads/main'
         with:
