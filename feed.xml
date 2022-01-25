@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-25T09:28:46+00:00</updated>
+    <updated>2022-01-25T09:31:41+00:00</updated>
 
     
     <entry>
@@ -20,7 +20,7 @@
         <updated>2022-01-13T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/blog/2022/01/13/Theseus-Year-In-Review-2021.html</id>
         <content type="html" xml:base="https://theseus-os.github.io/blog/2022/01/13/Theseus-Year-In-Review-2021.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseuss-first-full-year&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseuss-first-full-year&quot;&gt;&lt;/a&gt;Theseus&#x27;s First Full Year&lt;/h2&gt;
-&lt;p&gt;Although 2021 not the first year of Theseus development, it &lt;em&gt;was&lt;/em&gt; the first year in which:&lt;/p&gt;
+&lt;p&gt;Although 2021 not the first year of Theseus development, it &lt;em&gt;was&lt;/em&gt; the first whole year in which:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Theseus was fully open-sourced and publically known to the community.&lt;/li&gt;
 &lt;li&gt;Theseus received interest from academic and industry collaborators.&lt;/li&gt;
@@ -29,7 +29,8 @@
 &lt;/ol&gt;
 &lt;p&gt;Our &lt;a href&#x3D;&quot;https://www.usenix.org/conference/osdi20/presentation/boos&quot;&gt;SOSP paper&lt;/a&gt; describing Theseus&#x27;s research goals and novel design was published back in late 2020.
 Since then, we&#x27;ve received lots of interest from various academic institutions and industry folks beyond our home institutions of Yale University and Rice University.&lt;/p&gt;
-&lt;!-- This ultimately culminated TODO: discuss Futurewei sponsorship  --&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#collaboration--funding-with-futurewei&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;collaboration--funding-with-futurewei&quot;&gt;&lt;/a&gt;Collaboration &amp;amp; Funding with Futurewei&lt;/h3&gt;
+&lt;p&gt;As with many other projects in the Rust open-source community, Futurewei has identified Theseus as a project of interest that  This ultimately culminated TODO: discuss Futurewei sponsorship  --&amp;gt;&lt;/p&gt;
 &lt;p&gt;The rest of this blog entry is a work in progress. Check back soon!&lt;/p&gt;
 &lt;!-- ### Adding more features --&gt;
 &lt;!-- ### Legacy compatibility --&gt;
@@ -37,7 +38,7 @@ Since then, we&#x27;ve received lots of interest from various academic instituti
 &lt;p&gt;Beyond our usual contributors, we had several newcomers from both Yale University and the open-source community at large who generously devoted their time to make some excellent improvements to Theseus.
 Our sincere thanks to:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Futurewei Technologies, especially &lt;a href&#x3D;&quot;https://www.linkedin.com/in/sid-askary-21a962&quot;&gt;Sid Askary&lt;/a&gt; and &lt;a href&#x3D;&quot;https://www.linkedin.com/in/yong-he-1334902&quot;&gt;Yong He&lt;/a&gt;, for generously offering technical advise and funding for Theseus development.&lt;/li&gt;
+&lt;li&gt;Futurewei Technologies, especially &lt;a href&#x3D;&quot;https://www.linkedin.com/in/sid-askary-21a962&quot;&gt;Sid Askary&lt;/a&gt; and &lt;a href&#x3D;&quot;https://www.linkedin.com/in/yong-he-1334902&quot;&gt;Yong He&lt;/a&gt;, for generously offering technical advice and funding for Theseus development.&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/apogeeoak&quot;&gt;@apogeeoak&lt;/a&gt;, who improved documentation quality and implemented GitHub workflows to autogenerate docs.&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/vikrammullick&quot;&gt;Vikram Mullick&lt;/a&gt;, who began and nearly finished support for running WASM+WASI binaries atop Theseus.&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/jacob-earle&quot;&gt;Jacob Earle&lt;/a&gt;, who began support for logging output on ARM microcontrollers and a pseudo-real time scheduling algorithm for Theseus.&lt;/li&gt;
