@@ -41,11 +41,11 @@ jobs:
             cargo-build-${{ steps.rustc.outputs.version }}-
 
       - run: cargo run
-      - run: cp CNAME ./site/
+      # - run: cp CNAME ./site/
       - run: touch site/.nojekyll
       - uses: JamesIves/github-pages-deploy-action@releases/v3
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         with:
           ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
+          BRANCH: github_pages
           FOLDER: site
