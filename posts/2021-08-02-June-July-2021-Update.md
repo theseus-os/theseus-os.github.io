@@ -11,7 +11,7 @@ In June of this year, the Seattle area hit record high temperatures of over 110Â
 
 We began this hot summer with the goal of enabling Theseus to run atop seL4, using both its hypervisor and VMM functionality to present Theseus with a standard "bare metal" x86 environment.
 Unfortunately, we quickly discovered that while [seL4 supports ARM and x86](https://docs.sel4.systems/Tutorials/camkes-vm-linux.html), it does not yet fully support x86_64 VMMs, which is the only architecture that Theseus currently runs on.
-The implementation of an x86_64 VMM was supposedly [completed by Dornerworks[(https://dornerworks.com/blog/64-bit-x86-architecture-on-sel4/)], but we were unable to get it to successfully run any x86_64 guest OS (but x86 VMs did work properly).
+The implementation of an x86_64 VMM was supposedly [completed by Dornerworks](https://dornerworks.com/blog/64-bit-x86-architecture-on-sel4/), but we were unable to get it to successfully run any x86_64 guest OS (but x86 VMs did work properly).
 We have decided to postpone this particular effort until [this PR](https://github.com/seL4/seL4/pull/324) that officially adds support for x86_64 VMMs on seL4 is accepted.
 
 ## Headless operation 
