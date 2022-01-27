@@ -41,6 +41,7 @@ jobs:
             cargo-build-${{ steps.rustc.outputs.version }}-
 
       - run: cargo run
+      ### Note: GitHub Pages auto-inserts a CNAME file based on the github settings for this repo.
       # - run: cp CNAME ./site/
       - run: touch site/.nojekyll
       - uses: JamesIves/github-pages-deploy-action@releases/v3

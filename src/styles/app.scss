@@ -3,7 +3,7 @@
 $body-font: 'Fira Sans', Helvetica, Arial, sans-serif;
 $header-font: 'Alfa Slab One', serif;
 
-$gray: #2a3439;
+$gray: #13394b;
 $red: #a72145;
 $green: #53c489;
 $purple: #2e2459;
@@ -112,14 +112,14 @@ ul.nav, ul.nav li {
 div.brand {
   $v-top: 3px; // for getting the vertical rhythm just right
 
-  color: black;
+  color: $gray;
   font-family: $header-font;
   font-size: 3rem;
   text-decoration: none;
   margin-top: $v-top;
 
   & a {
-    color: black;
+    color: $gray;
     text-decoration: none;
   }
 
@@ -130,7 +130,7 @@ div.brand {
 
   span {
     display: inline-block;
-    margin-left: -1rem;
+    margin-left: 0rem;
   }
 }
 

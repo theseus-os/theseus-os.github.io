@@ -1,8 +1,8 @@
-title: " Theseus OS Blog"
+title: "Theseus OS Blog"
 index-title: The Theseus OS Blog
 link-text: the main Theseus OS blog
 description: Status updates and info about Theseus OS development.
-index-html: This is the <b>Theseus OS blog</b>, where Theseus OS maintainers announce development and progress updates.
+index-html: Welcome to the <b>Theseus OS blog</b>, where Theseus OS maintainers announce development and progress updates.
 maintained-by: Kevin Boos and The Theseus OS Maintainers
 requires-team: false
 
