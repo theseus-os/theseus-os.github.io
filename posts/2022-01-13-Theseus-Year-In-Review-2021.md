@@ -14,13 +14,6 @@ Although 2021 not the first year of Theseus development, it _was_ the first whol
 4. Our focus shifted from prototyping research concepts to feature completeness, stabilization, and legacy compatibility.
 
 
-Our [SOSP paper](https://www.usenix.org/conference/osdi20/presentation/boos) describing Theseus's research goals and novel design was published back in late 2020. 
-Since then, we've received lots of interest from various academic institutions and industry folks beyond our home institutions of Yale University and Rice University.
-
-### Collaboration & Funding with Futurewei
-As with many other projects in the Rust open-source community, Futurewei has identified Theseus as a project of interest that  This ultimately culminated TODO: discuss Futurewei sponsorship  -->
-
-
 The rest of this blog entry is a work in progress. Check back soon!
 
 
