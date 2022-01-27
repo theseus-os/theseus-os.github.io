@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-27T01:55:54+00:00</updated>
+    <updated>2022-01-27T20:53:15+00:00</updated>
 
     
     <entry>
@@ -49,12 +49,133 @@ Our sincere thanks to:&lt;/p&gt;
     </entry>
     
     <entry>
+        <title>June/July Update: Headless Operation on seL4</title>
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/08/02/June-July-2021-Update.html" type="text/html" title="June/July Update: Headless Operation on seL4" />
+        <published>2021-08-02T00:00:00+00:00</published>
+        <updated>2021-08-02T00:00:00+00:00</updated>
+        <id>https://theseus-os.github.io/blog/2021/08/02/June-July-2021-Update.html</id>
+        <content type="html" xml:base="https://theseus-os.github.io/blog/2021/08/02/June-July-2021-Update.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#one-very-busy-very-hot-summer&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;one-very-busy-very-hot-summer&quot;&gt;&lt;/a&gt;One Very Busy, Very Hot Summer&lt;/h2&gt;
+&lt;p&gt;In June of this year, the Seattle area hit record high temperatures of over 110°F (44°C) for three days. Ouch!&lt;/p&gt;
+&lt;p&gt;We began this hot summer with the goal of enabling Theseus to run atop seL4, using both its hypervisor and VMM functionality to present Theseus with a standard &amp;quot;bare metal&amp;quot; x86 environment.
+Unfortunately, we quickly discovered that while &lt;a href&#x3D;&quot;https://docs.sel4.systems/Tutorials/camkes-vm-linux.html&quot;&gt;seL4 supports ARM and x86&lt;/a&gt;, it does not yet fully support x86_64 VMMs, which is the only architecture that Theseus currently runs on.
+The implementation of an x86_64 VMM was supposedly [completed by Dornerworks[(https://dornerworks.com/blog/64-bit-x86-architecture-on-sel4/)], but we were unable to get it to successfully run any x86_64 guest OS (but x86 VMs did work properly).
+We have decided to postpone this particular effort until &lt;a href&#x3D;&quot;https://github.com/seL4/seL4/pull/324&quot;&gt;this PR&lt;/a&gt; that officially adds support for x86_64 VMMs on seL4 is accepted.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#headless-operation&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;headless-operation&quot;&gt;&lt;/a&gt;Headless operation&lt;/h2&gt;
+&lt;p&gt;In the meantime, we started working towards Theseus-level support for &lt;em&gt;headless&lt;/em&gt; operation over a serial port interface.
+The serial port is the only form of direct interactive access to guest VMs on seL4 (excluding network access), so it is a necessary component to debug and use Theseus therein.
+It&#x27;s also useful for communicating with serial devices on other more limited platforms, e.g., our &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/pull/361&quot;&gt;WIP port of Theseus to ARM Cortex-M4 microcontrollers&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Previously, Theseus had two problems in this area:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;All input to the shell/terminal was assumed to come from a real keyboard and mouse.&lt;/li&gt;
+&lt;li&gt;The serial port was only used for basic logging output (not treated as a regular I/O device).&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;To achieve headless operation, we had to set two corresponding goals:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Abstract the terminal and input handling to work with any I/O source, not just a physical keyboard.&lt;/li&gt;
+&lt;li&gt;Enable full, bidirectional, arbitrary I/O across serial ports.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#new-io-abstractions--stateless-vs-stateful&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;new-io-abstractions--stateless-vs-stateful&quot;&gt;&lt;/a&gt;New I/O Abstractions:  Stateless vs. Stateful&lt;/h3&gt;
+&lt;p&gt;As the first step towards these goals, we created &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/blob/051e52782658a3e0f11c486d8656e71da1f7ba07/kernel/io/src/lib.rs&quot;&gt;several new I/O traits&lt;/a&gt; to represent different categories of I/O.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.BlockReader.html&quot;&gt;&lt;code&gt;BlockReader&lt;/code&gt;&lt;/a&gt; and &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.BlockWriter.html&quot;&gt;&lt;code&gt;BlockWriter&lt;/code&gt;&lt;/a&gt; traits represent I/O streams which can be read from or written to at the granularity of a single block (as the smallest transferable chunk).&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.BlockIo.html&quot;&gt;&lt;code&gt;BlockIo&lt;/code&gt;&lt;/a&gt; is a &amp;quot;parent&amp;quot; trait that specifies the size in bytes of each block
+in a block-based I/O stream.&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.KnownLength.html&quot;&gt;&lt;code&gt;KnownLength&lt;/code&gt;&lt;/a&gt;: a separate trait that represents an I/O stream with a known length, such as a disk drive.&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.ByteReader.html&quot;&gt;&lt;code&gt;ByteReader&lt;/code&gt;&lt;/a&gt;, &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/trait.ByteWriter.html&quot;&gt;&lt;code&gt;ByteWriter&lt;/code&gt;&lt;/a&gt;: traits that represent I/O streams which can be read from or written to at the granularity of an individual byte.&lt;/li&gt;
+&lt;li&gt;We also provide wrapper types that allow byte-wise access atop block-based I/O streams: &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.ByteReaderWrapper.html&quot;&gt;&lt;code&gt;ByteReaderWrapper&lt;/code&gt;&lt;/a&gt;, &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.ByteWriterWrapper.html&quot;&gt;&lt;code&gt;ByteWriterWrapper&lt;/code&gt;&lt;/a&gt;, &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.ByteReaderWriterWrapper.html&quot;&gt;&lt;code&gt;ByteReaderWriterWrapper&lt;/code&gt;&lt;/a&gt;.
+&lt;ul&gt;
+&lt;li&gt;The &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/fn.blocks_from_bytes.html&quot;&gt;&lt;code&gt;blocks_from_bytes()&lt;/code&gt;&lt;/a&gt; function is useful for calculating the set of block-based I/O transfers that are needed to satisfy an arbitrary byte-wise transfer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Notably, these traits all offer &lt;em&gt;&lt;strong&gt;stateless&lt;/strong&gt;&lt;/em&gt; access to byte streams only, an important behavioral characteristic that helps simplify state management in Theseus.
+This means that they don&#x27;t keep track of an internal offset within the stream.&lt;/p&gt;
+&lt;p&gt;For example, the &lt;code&gt;ByteReader&lt;/code&gt; trait exposes only one function that requires the caller to specify at which offset the stream read should start.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;fn read_at(&amp;amp;mut self, buffer: &amp;amp;mut [u8], offset: usize) -&amp;gt; Result&amp;lt;...&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;These traits and types also &lt;em&gt;stack&lt;/em&gt; on top of each other, e.g., you can use a &lt;code&gt;ByteReader&lt;/code&gt; to realize byte-wise access to an underlying block-based I/O device that implements &lt;code&gt;BlockReader&lt;/code&gt;.
+We make this easier with trait &lt;em&gt;delegation&lt;/em&gt;, in which wrapper types &amp;quot;forward&amp;quot; the trait implementation through:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;References (&lt;code&gt;&amp;amp;dyn ByteReader&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;Mutable References (&lt;code&gt;&amp;amp;mut dyn ByteReader&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;Locks (&lt;code&gt;Mutex&amp;lt;ByteReader&amp;gt;&lt;/code&gt;) using the &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.LockableIo.html&quot;&gt;&lt;code&gt;LockableIo&lt;/code&gt;&lt;/a&gt; type&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We also offer &lt;em&gt;&lt;strong&gt;stateful&lt;/strong&gt;&lt;/em&gt; I/O types, which wrap stateless I/O streams (the above traits) to track the current offset into the I/O stream while reading or writing it.
+This is similar to classic POSIX I/O interfaces, but are strongly-typed and allow for limited permissions: &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.ReaderWriter.html&quot;&gt;&lt;code&gt;ReaderWriter&lt;/code&gt;&lt;/a&gt;, &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.Reader.html&quot;&gt;&lt;code&gt;Reader&lt;/code&gt;&lt;/a&gt;, and &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/io/struct.Writer.html&quot;&gt;&lt;code&gt;Writer&lt;/code&gt;&lt;/a&gt; structs.&lt;/p&gt;
+&lt;p&gt;Finally, all of the above types and traits implement the &lt;code&gt;no_std&lt;/code&gt; version of &lt;code&gt;std::io::Read&lt;/code&gt;/&lt;code&gt;Write&lt;/code&gt; traits, which can come from crates like &lt;a href&#x3D;&quot;https://crates.io/crates/core_io&quot;&gt;&lt;code&gt;core_io&lt;/code&gt;&lt;/a&gt; or &lt;a href&#x3D;&quot;https://crates.io/crates/bare-io&quot;&gt;&lt;code&gt;bare_io&lt;/code&gt;&lt;/a&gt;.
+This widely expands their compatibility to work with pretty much any other I/O-related code in the Rust ecosystem.&lt;/p&gt;
+&lt;p&gt;For example, we used these new I/O abstractions to integrate the &lt;a href&#x3D;&quot;https://github.com/rafalh/rust-fatfs&quot;&gt;&lt;code&gt;fatfs&lt;/code&gt; Rust crate&lt;/a&gt; with Theseus, which allows Theseus to read and write the contents of a FAT filesystem on disk.
+More work is required to provide a more generic file abstraction that can represent arbitrary files across any filesystem type, as Theseus&#x27;s current representation of files is quite ad-hoc and limited to in-memory filesystems.&lt;/p&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#redesigned-serial-port-driver&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;redesigned-serial-port-driver&quot;&gt;&lt;/a&gt;Redesigned Serial Port Driver&lt;/h3&gt;
+&lt;p&gt;With redesigned I/O traits, we can proceed to our second goal of improving the serial port driver.&lt;/p&gt;
+&lt;p&gt;On x86 machines, there are up to 4 serial ports, but commonly only one or two are available: &lt;code&gt;COM1&lt;/code&gt; and &lt;code&gt;COM2&lt;/code&gt;.
+The OS can interact with them using different I/O ports, e.g., writing bytes to &lt;code&gt;0x3F8&lt;/code&gt; and the subsequent 7 port addresses will allow you to communicate with the &lt;code&gt;COM1&lt;/code&gt; serial port.
+Here are three great resources for learning more about serial port behavior and how to write a proper driver: &lt;a href&#x3D;&quot;https://en.wikibooks.org/wiki/Serial_Programming/8250_UART_Programming&quot;&gt;one&lt;/a&gt;, &lt;a href&#x3D;&quot;https://tldp.org/HOWTO/Modem-HOWTO-4.html&quot;&gt;two&lt;/a&gt;, &lt;a href&#x3D;&quot;https://wiki.osdev.org/Serial_Ports&quot;&gt;three&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The changes we needed to make are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Implement and activate interrupt handlers for all serial ports, such that the hardware triggers an interrupt when input bytes are received on the port.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;SerialPort&lt;/code&gt; instances are no longer exclusively owned by the logger, as they must be accessible from within the serial port interrupt handler and other kernel/application crates.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Implement the necessary read and write I/O traits for the &lt;code&gt;SerialPort&lt;/code&gt; type, so we can use them in all I/O stream contexts.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;With these changes in place, Theseus is now able to read from and write to serial ports freely, as if it were any other I/O stream like a file or disk.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#other-improvements-to-theseus&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;other-improvements-to-theseus&quot;&gt;&lt;/a&gt;Other Improvements to Theseus&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Updated Theseus&#x27;s Rust compiler to version 1.54, which entailed &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/b7d62ee0197347b651e2cf1387f83c9c4a598633&quot;&gt;many changes&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Refactoring all inline assembly to Rust&#x27;s new &lt;code&gt;asm!()&lt;/code&gt; syntax.&lt;/li&gt;
+&lt;li&gt;Complying with the restrictions on naked functions: Rust ABI is no longer allowed, and only one assembly block is permitted per naked function.&lt;/li&gt;
+&lt;li&gt;Use the new &lt;a href&#x3D;&quot;https://doc.rust-lang.org/stable/core/sync/atomic/struct.AtomicUsize.html#method.compare_exchange_weak&quot;&gt;&lt;code&gt;compare_exchange_weak()&lt;/code&gt;&lt;/a&gt; family of functions, which is more efficient on some architectures (ARM) because it is allowed to spuriously fail.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Refactored code for memory-related types to unify their APIs:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/pull/417&quot;&gt;&lt;code&gt;VirtualAddress&lt;/code&gt; and &lt;code&gt;PhysicalAddress&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/6854306a8f2c16f3caf1332120856a0fff8de25f&quot;&gt;&lt;code&gt;Page&lt;/code&gt; and &lt;code&gt;Frame&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/b09ad9bc73683397a0b16b9b53f9214bdf87c04d&quot;&gt;&lt;code&gt;PageRange&lt;/code&gt; and &lt;code&gt;FrameRange&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Book documentation: thanks to &lt;a href&#x3D;&quot;https://github.com/apogeeoak&quot;&gt;@apogeeoak&lt;/a&gt;, the Theseus Book now has clearer structure, automatic spell check, and is built and published online via GitHub Actions CI workflows.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Mellanox 100GiB NIC: &lt;a href&#x3D;&quot;https://github.com/Ramla-I&quot;&gt;Ramla Ijaz&lt;/a&gt; added basic support for &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/pull/404&quot;&gt;initializing and configuring this high-performance NIC&lt;/a&gt;. Packet transmission is an ongoing work in progress.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Added support for parsing the ACPI &lt;code&gt;DMAR&lt;/code&gt; table, which specifies details about the system&#x27;s IOMMU.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;This is part of our quest to protect Theseus&#x27;s single address space execution environment from errant or malicious I/O devices that attempt to access arbitrary system memory without permission, the one final frontier in the &amp;quot;chain of safety&amp;quot; that cannot be checking by the compiler.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#contributions-to-other-open-source-projects&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;contributions-to-other-open-source-projects&quot;&gt;&lt;/a&gt;Contributions to other Open-Source Projects&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;We added &lt;a href&#x3D;&quot;https://github.com/rafalh/rust-fatfs/pull/44&quot;&gt;compile-time configuration of logging flexibility&lt;/a&gt; to the &lt;code&gt;rust-fatfs&lt;/code&gt; crate.&lt;/li&gt;
+&lt;li&gt;We ported the MPMC Queue crate to &lt;a href&#x3D;&quot;https://github.com/brayniac/mpmc/pull/8&quot;&gt;support &lt;code&gt;no_std&lt;/code&gt; environments&lt;/a&gt; on the latest version of Rust.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#next-steps&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;next-steps&quot;&gt;&lt;/a&gt;Next Steps&lt;/h2&gt;
+&lt;p&gt;Now that we have flexible, generic I/O abstractions available in Theseus, the next step for achieving full headless operation is to enable a terminal/CLI to handle I/O to and from arbitrary sources, such as a serial port.&lt;/p&gt;
+</content>
+
+        <author>
+            <name>Kevin Boos</name>
+        </author>
+    </entry>
+    
+    <entry>
         <title>Hello (World!) from Theseus</title>
-        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html" type="text/html" title="Hello (World!) from Theseus" />
-        <published>2021-06-26T00:00:00+00:00</published>
-        <updated>2021-06-26T00:00:00+00:00</updated>
-        <id>https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html</id>
-        <content type="html" xml:base="https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseuss-first-blog-post&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseuss-first-blog-post&quot;&gt;&lt;/a&gt;Theseus&#x27;s First Blog Post&lt;/h2&gt;
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/06/28/Hello-Theseus.html" type="text/html" title="Hello (World!) from Theseus" />
+        <published>2021-06-28T00:00:00+00:00</published>
+        <updated>2021-06-28T00:00:00+00:00</updated>
+        <id>https://theseus-os.github.io/blog/2021/06/28/Hello-Theseus.html</id>
+        <content type="html" xml:base="https://theseus-os.github.io/blog/2021/06/28/Hello-Theseus.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseuss-first-blog-post&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseuss-first-blog-post&quot;&gt;&lt;/a&gt;Theseus&#x27;s First Blog Post&lt;/h2&gt;
 &lt;p&gt;Hello, World!&lt;/p&gt;
 &lt;p&gt;This is the introductory post for the Theseus OS Blog, which will be used to provide more details about the changes and developmental progress of &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus&quot;&gt;Theseus OS&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;With this blog, we hope to achieve the following goals:&lt;/p&gt;
