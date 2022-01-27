@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-27T20:53:15+00:00</updated>
+    <updated>2022-01-27T21:23:33+00:00</updated>
 
     
     <entry>
@@ -58,7 +58,7 @@ Our sincere thanks to:&lt;/p&gt;
 &lt;p&gt;In June of this year, the Seattle area hit record high temperatures of over 110°F (44°C) for three days. Ouch!&lt;/p&gt;
 &lt;p&gt;We began this hot summer with the goal of enabling Theseus to run atop seL4, using both its hypervisor and VMM functionality to present Theseus with a standard &amp;quot;bare metal&amp;quot; x86 environment.
 Unfortunately, we quickly discovered that while &lt;a href&#x3D;&quot;https://docs.sel4.systems/Tutorials/camkes-vm-linux.html&quot;&gt;seL4 supports ARM and x86&lt;/a&gt;, it does not yet fully support x86_64 VMMs, which is the only architecture that Theseus currently runs on.
-The implementation of an x86_64 VMM was supposedly [completed by Dornerworks[(https://dornerworks.com/blog/64-bit-x86-architecture-on-sel4/)], but we were unable to get it to successfully run any x86_64 guest OS (but x86 VMs did work properly).
+The implementation of an x86_64 VMM was supposedly &lt;a href&#x3D;&quot;https://dornerworks.com/blog/64-bit-x86-architecture-on-sel4/&quot;&gt;completed by Dornerworks&lt;/a&gt;, but we were unable to get it to successfully run any x86_64 guest OS (but x86 VMs did work properly).
 We have decided to postpone this particular effort until &lt;a href&#x3D;&quot;https://github.com/seL4/seL4/pull/324&quot;&gt;this PR&lt;/a&gt; that officially adds support for x86_64 VMMs on seL4 is accepted.&lt;/p&gt;
 &lt;h2&gt;&lt;a href&#x3D;&quot;#headless-operation&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;headless-operation&quot;&gt;&lt;/a&gt;Headless operation&lt;/h2&gt;
 &lt;p&gt;In the meantime, we started working towards Theseus-level support for &lt;em&gt;headless&lt;/em&gt; operation over a serial port interface.
