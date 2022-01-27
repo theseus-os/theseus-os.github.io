@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-27T00:11:57+00:00</updated>
+    <updated>2022-01-27T01:55:54+00:00</updated>
 
     
     <entry>
@@ -27,10 +27,6 @@
 &lt;li&gt;Theseus received funding for open-source development from industry (yay!).&lt;/li&gt;
 &lt;li&gt;Our focus shifted from prototyping research concepts to feature completeness, stabilization, and legacy compatibility.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Our &lt;a href&#x3D;&quot;https://www.usenix.org/conference/osdi20/presentation/boos&quot;&gt;SOSP paper&lt;/a&gt; describing Theseus&#x27;s research goals and novel design was published back in late 2020.
-Since then, we&#x27;ve received lots of interest from various academic institutions and industry folks beyond our home institutions of Yale University and Rice University.&lt;/p&gt;
-&lt;h3&gt;&lt;a href&#x3D;&quot;#collaboration--funding-with-futurewei&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;collaboration--funding-with-futurewei&quot;&gt;&lt;/a&gt;Collaboration &amp;amp; Funding with Futurewei&lt;/h3&gt;
-&lt;p&gt;As with many other projects in the Rust open-source community, Futurewei has identified Theseus as a project of interest that  This ultimately culminated TODO: discuss Futurewei sponsorship  --&amp;gt;&lt;/p&gt;
 &lt;p&gt;The rest of this blog entry is a work in progress. Check back soon!&lt;/p&gt;
 &lt;!-- ### Adding more features --&gt;
 &lt;!-- ### Legacy compatibility --&gt;
@@ -54,12 +50,71 @@ Our sincere thanks to:&lt;/p&gt;
     
     <entry>
         <title>Hello (World!) from Theseus</title>
-        <link rel="alternate" href="https://theseus-os.github.io/blog/2022/01/05/Hello-Theseus.html" type="text/html" title="Hello (World!) from Theseus" />
-        <published>2022-01-05T00:00:00+00:00</published>
-        <updated>2022-01-05T00:00:00+00:00</updated>
-        <id>https://theseus-os.github.io/blog/2022/01/05/Hello-Theseus.html</id>
-        <content type="html" xml:base="https://theseus-os.github.io/blog/2022/01/05/Hello-Theseus.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseuss-first-blog-post&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseuss-first-blog-post&quot;&gt;&lt;/a&gt;Theseus&#x27;s First Blog Post&lt;/h2&gt;
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html" type="text/html" title="Hello (World!) from Theseus" />
+        <published>2021-06-26T00:00:00+00:00</published>
+        <updated>2021-06-26T00:00:00+00:00</updated>
+        <id>https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html</id>
+        <content type="html" xml:base="https://theseus-os.github.io/blog/2021/06/26/Hello-Theseus.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseuss-first-blog-post&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseuss-first-blog-post&quot;&gt;&lt;/a&gt;Theseus&#x27;s First Blog Post&lt;/h2&gt;
 &lt;p&gt;Hello, World!&lt;/p&gt;
+&lt;p&gt;This is the introductory post for the Theseus OS Blog, which will be used to provide more details about the changes and developmental progress of &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus&quot;&gt;Theseus OS&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;With this blog, we hope to achieve the following goals:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Provide an easier, more transparent way to follow changes to Theseus OS than having to pore over GitHub commits&lt;/li&gt;
+&lt;li&gt;Announce major changes, feature additions, and releases&lt;/li&gt;
+&lt;li&gt;Share interesting tidbits related to low-level and embedded Rust development&lt;/li&gt;
+&lt;li&gt;Inspire folks in the open-source community to get involved and contribute&lt;/li&gt;
+&lt;li&gt;Collect thoughts, ideas, and feedback from the Rust and OS community more directly&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#the-path-from-research-to-usability&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-path-from-research-to-usability&quot;&gt;&lt;/a&gt;The Path from Research to Usability&lt;/h2&gt;
+&lt;p&gt;Since development began at Rice University a few years ago, our focus has been solely on pursuing designs with strong research merit rather than achieveing usability or feature-completeness.
+As such, the current state of Theseus is a strange (im)balance between:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;😊 An existing set of highly-advanced system features:
+&lt;ul&gt;
+&lt;li&gt;Fully-safe memory management for arbitrary memory regions&lt;/li&gt;
+&lt;li&gt;Compiler-assisted resource and state management&lt;/li&gt;
+&lt;li&gt;Dynamic loading and linking of system components at runtime&lt;/li&gt;
+&lt;li&gt;Full cuustom unwinding from high-level applications to low-level kernel entities&lt;/li&gt;
+&lt;li&gt;Robust fault tolerance with a tiny core dependency set&lt;/li&gt;
+&lt;li&gt;Live evolution of components at any layer/level of the system&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;🙁 More &amp;quot;basic&amp;quot; features that are missing:
+&lt;ul&gt;
+&lt;li&gt;No true support for filesystems&lt;/li&gt;
+&lt;li&gt;Interactive shell is very minimal&lt;/li&gt;
+&lt;li&gt;Poor graphics support with slow compositing&lt;/li&gt;
+&lt;li&gt;Lacking device support beyond mouse, keyboard, and networking&lt;/li&gt;
+&lt;li&gt;Cannot run standard applications that use libc/libstd&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;That all changes today!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;We&#x27;ll now focus on proving that Theseus can be useful in real-world environments (beyond just research applications) by:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Analyzing, auditing, and shoring up its existing functionality&lt;/li&gt;
+&lt;li&gt;Fleshing out its interfaces and missing subsystems&lt;/li&gt;
+&lt;li&gt;Improving stability, genericness, and usability of primary subsystems&lt;/li&gt;
+&lt;li&gt;Working on legacy compatibility, including libc, Rust&#x27;s libstd, and running WASM binaries&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That being said, researchers at Yale University will continue to use Theseus as a foundation for novel OS research, and their contributions may be featured here as well, when appropriate.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#funding-from-futurewei&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;funding-from-futurewei&quot;&gt;&lt;/a&gt;Funding from Futurewei&lt;/h2&gt;
+&lt;p&gt;Since being published in the &lt;a href&#x3D;&quot;https://www.usenix.org/conference/osdi20/presentation/boos&quot;&gt;SOSP 2020 conference&lt;/a&gt;, Theseus has garnered a lot of interest from both fellow academic institutions as well as industry researchers.
+Among the interested parties was &lt;a href&#x3D;&quot;https://futurewei.com/&quot;&gt;Futurewei Technologies&lt;/a&gt;, who reached out to our research lab at Yale University (previously at Rice University) to inquire about the future of Theseus and to determine whether it could prove useful for various important domains, such as automotive computing.&lt;/p&gt;
+&lt;p&gt;Futurewei graciously offered to fund me (Kevin Boos), the creator of Theseus, to work on Theseus in a full-time capacity.
+Futurewei has made a formal committment that all intellectual property and artifacts produced from work on Theseus will continue to be made open-source and remain so indefinitely, and that we will retain full control of the direction of the project.
+In addition, Futurewei has committed to funding a variety of other significant projects, teams, and individuals in the Rust community, from Rust core, compiler, and language teams themselves to folks like us working on Rust-centric projects.
+Together, we&#x27;re building a strong Rust ecosystem for the next generation of safe, efficient computing.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#looking-forward&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;looking-forward&quot;&gt;&lt;/a&gt;Looking forward&lt;/h2&gt;
+&lt;p&gt;I am both honored and excited to be able to continue developing Theseus, which was born out of my PhD dissertation research.
+In the coming months, we plan to work on some fascinating topics:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Running Theseus atop seL4 and other secure hypervisors&lt;/li&gt;
+&lt;li&gt;Executing WASM + WASI binaries on Theseus&lt;/li&gt;
+&lt;li&gt;Implementing support for filesystems, async/await, libc, and libstd&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Thanks for reading, and be on the lookout for more content soon. Feel free to contact us via email or on GitHub with comments or questions.&lt;/p&gt;
+&lt;p&gt;To learn more, use the links up top to explore the Theseus Book and source code.&lt;/p&gt;
 </content>
 
         <author>
