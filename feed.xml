@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
-    <generator uri="https://theseus-os.github.io/blog/" version="0.1.0"> Theseus OS Blog</generator>
+    <generator uri="https://theseus-os.github.io/blog/" version="0.1.0">Theseus OS Blog</generator>
     <link href="https://theseus-os.github.io/blog/feed.xml" rel="self" type="application/atom+xml" />
     <link href="https://theseus-os.github.io/blog/" rel="alternate" type="text/html" />
     <id>https://theseus-os.github.io/blog/</id>
-    <title> Theseus OS Blog</title>
+    <title>Theseus OS Blog</title>
     <subtitle>Status updates and info about Theseus OS development.</subtitle>
     <author>
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-25T09:31:41+00:00</updated>
+    <updated>2022-01-27T00:11:57+00:00</updated>
 
     
     <entry>
