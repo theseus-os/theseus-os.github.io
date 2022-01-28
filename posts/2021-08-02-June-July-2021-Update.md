@@ -65,7 +65,7 @@ More work is required to provide a more generic file abstraction that can repres
 
 
 ### Redesigned Serial Port Driver
-With redesigned I/O traits, we can proceed to our second goal of improving the serial port driver.
+With redesigned I/O traits, we can proceed to our second goal: improving the serial port driver.
 
 On x86 machines, there are up to 4 serial ports, but commonly only one or two are available: `COM1` and `COM2`. 
 The OS can interact with them using different I/O ports, e.g., writing bytes to `0x3F8` and the subsequent 7 port addresses will allow you to communicate with the `COM1` serial port.
@@ -74,16 +74,13 @@ Here are three great resources for learning more about serial port behavior and 
 
 The changes we needed to make are:
 * Implement and activate interrupt handlers for all serial ports, such that the hardware triggers an interrupt when input bytes are received on the port.
-
 * `SerialPort` instances are no longer exclusively owned by the logger, as they must be accessible from within the serial port interrupt handler and other kernel/application crates.
-
 * Implement the necessary read and write I/O traits for the `SerialPort` type, so we can use them in all I/O stream contexts.
 
 With these changes in place, Theseus is now able to read from and write to serial ports freely, as if it were any other I/O stream like a file or disk.
 
 
 ## Other Improvements to Theseus
-
 * Updated Theseus's Rust compiler to version 1.54, which entailed [many changes](https://github.com/theseus-os/Theseus/commit/b7d62ee0197347b651e2cf1387f83c9c4a598633):
    * Refactoring all inline assembly to Rust's new `asm!()` syntax.
    * Complying with the restrictions on naked functions: Rust ABI is no longer allowed, and only one assembly block is permitted per naked function.
