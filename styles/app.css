@@ -81,7 +81,7 @@ header h1 {
   margin-top: 0; }
 
 section {
-  padding: 30px 0 60px 0; }
+  padding: 30px 0 30px 0; }
 
 section .container {
   padding-top: 20px; }
@@ -179,7 +179,7 @@ table.post-list a:hover {
 
 .publish-date-author {
   color: #13394b;
-  margin: -60px 0 60px 0; }
+  margin: -60px 0 30px 0; }
 
 footer {
   padding: 30px 0;
