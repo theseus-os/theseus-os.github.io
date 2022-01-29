@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and The Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-01-28T18:27:43+00:00</updated>
+    <updated>2022-01-29T02:43:48+00:00</updated>
 
     
     <entry>
@@ -41,6 +41,174 @@ Our sincere thanks to:&lt;/p&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/joshtriplett&quot;&gt;Josh Triplett&lt;/a&gt;, who served as a valuable font of advice and sounding board for some of my wild Theseus ideas.&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/phil-opp&quot;&gt;Philipp Oppermann&lt;/a&gt;, whose project &lt;a href&#x3D;&quot;https://os.phil-opp.com/&quot;&gt;Blog OS&lt;/a&gt; helped kickstart Theseus development a few years ago.&lt;/li&gt;
 &lt;/ul&gt;
+</content>
+
+        <author>
+            <name>Kevin Boos</name>
+        </author>
+    </entry>
+    
+    <entry>
+        <title>August/September Update: A Proper Terminal Emulator</title>
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/10/04/August-September-Update.html" type="text/html" title="August/September Update: A Proper Terminal Emulator" />
+        <published>2021-10-04T00:00:00+00:00</published>
+        <updated>2021-10-04T00:00:00+00:00</updated>
+        <id>https://theseus-os.github.io/blog/2021/10/04/August-September-Update.html</id>
+        <content type="html" xml:base="https://theseus-os.github.io/blog/2021/10/04/August-September-Update.html">&lt;p&gt;As mentioned in our &lt;a href&#x3D;&quot;./2021-08-02-June-July-2021-Update.md&quot;&gt;previous update&lt;/a&gt;, we&#x27;re working to support headless operation in Theseus such that it can run in an seL4 guest VM, which doesn&#x27;t support graphical displays.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#going-headless-with-a-proper-terminal-interface&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;going-headless-with-a-proper-terminal-interface&quot;&gt;&lt;/a&gt;Going Headless with a Proper Terminal Interface&lt;/h2&gt;
+&lt;p&gt;We took a three-step approach towards realizing a proper headless interactive terminal:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Removing the requirement that a graphical display (e.g., VGA device) must exist for Theseus to successfully boot.
+&lt;ul&gt;
+&lt;li&gt;Now, if no display devices are not found, bootstrap and init can proceed, and headless operation is assumed.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Devising a new input dataflow and event manager, with the serial port as the focal data source and sink.
+&lt;ul&gt;
+&lt;li&gt;Monitors input sources for new connections asynchronously and spawns handlers for them upon receival.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Create a new terminal emulator that:
+&lt;ul&gt;
+&lt;li&gt;Offers abstraction layers to support both graphical &lt;em&gt;and&lt;/em&gt; non-graphical terminals.&lt;/li&gt;
+&lt;li&gt;Supports conventional escape and control codes, compliant with most ANSI, VT100, and xterm.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#yet-another-serial-port-driver-redesign&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;yet-another-serial-port-driver-redesign&quot;&gt;&lt;/a&gt;Yet Another Serial Port Driver Redesign&lt;/h3&gt;
+&lt;p&gt;Our existing serial port driver was very simple -- it synchronously transmitted output bytes and simply dumped input bytes.
+Thus, the receive interrupt handler was trivially simple and executed quickly.&lt;/p&gt;
+&lt;p&gt;However, the added complexity of doing actual work (e.g., spawning a new console/terminal instance) in the receive interrupt handler caused it to become prohibitively expensive to run.
+Executing long-running operations in an interrupt handler is unacceptable: &lt;em&gt;(i)&lt;/em&gt; it prevents that CPU from doing any other work, and &lt;em&gt;(ii)&lt;/em&gt; it harms system interactiveness by preventing other interrupts from being handled.&lt;/p&gt;
+&lt;p&gt;To avoid this, we used Theseus&#x27;s &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/async_channel/index.html&quot;&gt;asynchronous channels&lt;/a&gt; to establish a communication channel between the serial port interrupt handler and a separate &lt;em&gt;listener&lt;/em&gt; task.
+The listener task blocks until receiving a notification from any serial port, upon which it spawns a new console and terminal instance using that serial port and an input source and an output sink.&lt;/p&gt;
+&lt;p&gt;This design has one drawback: it requires &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/3e805f1799964f5b63c48d7ad6a072f130256445&quot;&gt;proactively spawning a dedicated task just to listen for notifications from the serial port&lt;/a&gt;.
+That led us to realize that it was time to introduce a better abstraction: deferred and/or linked interrupt handlers.&lt;/p&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#deferred-interrupt-handlers&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;deferred-interrupt-handlers&quot;&gt;&lt;/a&gt;Deferred Interrupt Handlers&lt;/h4&gt;
+&lt;p&gt;Theseus&#x27;s &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/deferred_interrupt_tasks/index.html&quot;&gt;Deferred Interrupt Handlers&lt;/a&gt; are an extension of the concept of &amp;quot;bottom half&amp;quot; and &amp;quot;top half&amp;quot; interrupt handlers&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;Interrupt Handler&lt;/em&gt; (aka &amp;quot;top half&amp;quot;): the short, latency-sensitive function that runs synchronously, immediately when the interrupt request is serviced. It typically does two things:
+&lt;ol&gt;
+&lt;li&gt;Notifies the deferred task that work is ready to be done (optionally providing details about that work), and&lt;/li&gt;
+&lt;li&gt;Acknowledges the interrupt such that the hardware knows it was handled.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Deferred task&lt;/em&gt; (aka &amp;quot;bottom half&amp;quot;): the more complex function that runs in a deferred manner to handle longer operations.
+&lt;ul&gt;
+&lt;li&gt;Runs asynchronously in a non-interrupt context and can thus perform more long-running operations without blocking the rest of that CPU&#x27;s workloads.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Theseus&#x27;s deferred interrupt handling implementation is conceptually similar to but differs from tasklets and workqueues in Linux.
+The deferred task is uniquely tied to an interrupt handler in a 1-to-1 manner upon creation and are fully type-safe; there is a direct, strongly-typed channel of communication between them&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn2&quot; id&#x3D;&quot;fnref2&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;.
+The deferred task can also optionally be configured to execute immediately after the interrupt handler in order to reduce I/O device latency, thanks to scheduler integration.
+It also encourages adherence to the &lt;em&gt;separation of concerns&lt;/em&gt; principle, as the interrupt handling functionality must be conciously divided into an &amp;quot;urgent&amp;quot; synchronous part and a deferred asynchronous part.&lt;/p&gt;
+&lt;p&gt;With this new interrupt handling architecture, we were able to adapt the serial driver to use it efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
+The serial port is a simple case, as the interrupt handler only need to notify the deferred task that data has been received on the port and then acknowledge the interrupt; no other data exchange is needed.
+The deferred task can then read all received data from the serial port in a non-urgent manner and do anything else necessary, such as spawning new console/terminal instances.&lt;/p&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#splitting-the-serial-port-driver&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;splitting-the-serial-port-driver&quot;&gt;&lt;/a&gt;Splitting the Serial Port Driver&lt;/h4&gt;
+&lt;p&gt;TODO
+https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d&lt;/p&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#a-complete-terminal-emulator-rewrite&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;a-complete-terminal-emulator-rewrite&quot;&gt;&lt;/a&gt;A Complete Terminal Emulator Rewrite&lt;/h3&gt;
+&lt;p&gt;Finally, we began the most complicated component of true interactive headless operation: a terminal emulator.
+Theseus&#x27;s existing terminal is fairly ad-hoc and doesn&#x27;t conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to running commands and display their output.
+The same is true for Theseus&#x27;s &lt;code&gt;stdio&lt;/code&gt;, which is a &amp;quot;quick-n-dirty&amp;quot; inflexible implementation that uses heap buffers instead of a real file abstraction.&lt;/p&gt;
+&lt;p&gt;As anyone who has dealt with this knows, terminal emulators are &lt;em&gt;exceedingly&lt;/em&gt; and unexpectedly complex.
+We experimented with multiple iterations of the design, primarily centered around how best to represent each displayable &amp;quot;unit&amp;quot; or &amp;quot;cell&amp;quot; on the terminal display:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The terminal grid stores a dynamic number of elements per line, in which each element can contain either a single character or a string of characters (no matter how wide) as long as they have the same style.
+&lt;ul&gt;
+&lt;li&gt;Easy to output to a text backend.&lt;/li&gt;
+&lt;li&gt;The most memory efficient.&lt;/li&gt;
+&lt;li&gt;Calculating line wrapping and cursor navigation is overly complex because each unit may have a different columnar display width.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The terminal grid stores a dynamic number of elements per line, but each element in the line can only contain a single &lt;em&gt;character&lt;/em&gt;.
+&lt;ul&gt;
+&lt;li&gt;Slightly less memory efficient, as it duplicates units that have the same style.&lt;/li&gt;
+&lt;li&gt;Easier to calculate displayed rows and cursor movement than design 1, but still complex.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The terminal grid stores a dynamic number of elements per line, but each element corresponds to a &lt;em&gt;single displayed column&lt;/em&gt; on screen.
+&lt;ul&gt;
+&lt;li&gt;Requires more memory and a little bit of extra effort to support wide characters, since they must be split across more than one element.&lt;/li&gt;
+&lt;li&gt;Much, much easier to calculate cursor movements, line wrapping, and display commands.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The terminal grid stores a fixed number of elements per line, equivalent to the width of the screen row; blank units are inserted to fill each linas necessary.
+&lt;ul&gt;
+&lt;li&gt;Very wasteful of memory, especially for short lines (common in terminal output).&lt;/li&gt;
+&lt;li&gt;Trivial to calculate displayed rows and cursor movement.&lt;/li&gt;
+&lt;li&gt;Very hard to re-size/re-flow the terminal.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;After multiple iterations, we settled on &lt;strong&gt;Design 3&lt;/strong&gt; above.
+It selects the best set of tradeoffs in the spectrum of design points, and most importantly, simplifies the translation between on-screen coordinates and scrollback buffer coordinate.&lt;/p&gt;
+&lt;p&gt;One interesting aspect of Theseus&#x27;s terminal emulator is that it is split into multiple components:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;em&gt;frontend&lt;/em&gt;: a single entity responsible for handling incoming character and control/escape code bytes and determining what actions should be taken.
+&lt;ul&gt;
+&lt;li&gt;The frontend is also reusable as a terminal driver, &lt;code&gt;readline&lt;/code&gt; library, and line discipline layer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;backend&lt;/em&gt; abstraction: a trait that represents the various display actions that a terminal might invoke.&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;backend&lt;/em&gt; implentation: one of multiple entity types that handles display actions to &amp;quot;render&amp;quot; the terminal output in different formats:
+&lt;ul&gt;
+&lt;li&gt;Graphical pixel framebuffers&lt;/li&gt;
+&lt;li&gt;Classic 80x25 VGA screen with 16-color basic text display&lt;/li&gt;
+&lt;li&gt;A serial port connected to a host-side pseudo-terminal&lt;/li&gt;
+&lt;li&gt;A network connection or file or any other sink&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However, this is still a work in progress and is not yet used for Theseus&#x27;s main terminal display.
+It takes quite a lot of effort to get all the details right, but we have an MVP that supports:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Insert/replace mode switching&lt;/li&gt;
+&lt;li&gt;Automatic CR/LF behavior with wrapping&lt;/li&gt;
+&lt;li&gt;Multiple different PTY backends, e.g., &lt;code&gt;screen&lt;/code&gt;, &lt;code&gt;picocom&lt;/code&gt;, &lt;code&gt;minicom&lt;/code&gt;, etc&lt;/li&gt;
+&lt;li&gt;Most ANSI escape/control codes, including colors and text styles&lt;/li&gt;
+&lt;li&gt;Cursor movement and scrolling&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Fortunately, there are several Rust terminal emulators that serve as valuable examples, e.g., &lt;a href&#x3D;&quot;https://github.com/alacritty&quot;&gt;Alacritty&lt;/a&gt;, but they&#x27;re standalone monolithic projects that rely on an underlying graphics stack like OpenGL and are thus inappropriate for in-kernel usage.
+We were able to use the excellent &lt;a href&#x3D;&quot;https://crates.io/crates/vte&quot;&gt;&lt;code&gt;vte&lt;/code&gt;&lt;/a&gt; crate from the Alacritty project though, which saved a lot of time and effort in parsing ANSI/VT100 control codes.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Did you know that the &amp;quot;grid&amp;quot; of a terminal screen is indexed starting at &lt;code&gt;(1,1)&lt;/code&gt; rather than &lt;code&gt;(0,0)&lt;/code&gt; for the upper-leftmost character? &lt;sup&gt; Oh, how I wish I knew that earlier...&lt;/sup&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#other-improvements&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;other-improvements&quot;&gt;&lt;/a&gt;Other Improvements&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Improved safety, complexity, and performance of &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/pull/419&quot;&gt;interpreting a memory region as an executable function&lt;/a&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Previously called &lt;code&gt;MappedPages::as_func()&lt;/code&gt;, now moved into the crate management subsystem as a member function of the &lt;code&gt;LoadedSection&lt;/code&gt; type.&lt;/li&gt;
+&lt;li&gt;The new &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/crate_metadata/struct.LoadedSection.html#method.as_func&quot;&gt;&lt;code&gt;LoadedSection::as_func()&lt;/code&gt; method&lt;/a&gt; already knows both the size of the function&#x27;s section and whether the underlying memory is executable, which omits multiple runtime checks.&lt;/li&gt;
+&lt;li&gt;The function interface is much simpler, as the caller need not specify any size or offset values w.r.t. the memory region.&lt;/li&gt;
+&lt;li&gt;Improves safety: offers a compile-time guarantee that an executable function instance can only be obtained from a &lt;code&gt;LoadedSection&lt;/code&gt; (with proper alignment and size) rather than any chunk of executable memory.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Re-designed parts of the &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/df721e35221d361f8ec8fd87364133f0be0f5cde&quot;&gt;&lt;code&gt;Task&lt;/code&gt; struct to reduce lock contention&lt;/a&gt;, eliminating it in most places.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&amp;quot;Mutable&amp;quot; fields (those that may change after &lt;code&gt;Task&lt;/code&gt; creation) are now moved into a &lt;code&gt;TaskInner&lt;/code&gt; struct (excluding atomic fields), which allows most fields to be accessed without acquiring the lock on that &lt;code&gt;Task&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Immutable fields are kept in the &amp;quot;outer&amp;quot; &lt;code&gt;Task&lt;/code&gt; struct.&lt;/li&gt;
+&lt;li&gt;We ensure atomic types are properly aligned and sized such that native atomic instructions are actually used. We realized this by switching from &lt;code&gt;atomic::Atomic&lt;/code&gt; to &lt;code&gt;crossbeam_utils::atomic::AtomicCell&lt;/code&gt;, plus static assertions that all types wrapped in &lt;code&gt;AtomicCell&lt;/code&gt; are actually eligible for native atomic access.&lt;/li&gt;
+&lt;li&gt;Move a Task&#x27;s &lt;code&gt;ExitValue&lt;/code&gt; out of its &lt;code&gt;RunState&lt;/code&gt; enum so that the &lt;code&gt;RunState&lt;/code&gt; enum can be accessed atomically and independently of an &lt;code&gt;ExitValue&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;runstate&lt;/code&gt; and &lt;code&gt;running_on_cpu&lt;/code&gt; fields of &lt;code&gt;Task&lt;/code&gt; are now atomically accessible in a lock-free manner, allowing us to block/unblock tasks in lock-free contexts, e.g., within an interrupt handler.&lt;/li&gt;
+&lt;li&gt;As more &lt;code&gt;Task&lt;/code&gt; fields are now readable without locking, we can remove all now-unnecessary unsafe statements from the &lt;code&gt;scheduler&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;section class&#x3D;&quot;footnotes&quot;&gt;
+&lt;ol&gt;
+&lt;li id&#x3D;&quot;fn1&quot;&gt;
+&lt;p&gt;Other terminology is often used, including &amp;quot;first-level&amp;quot; and &amp;quot;second-level&amp;quot; interrupt handlers, or &amp;quot;hard&amp;quot; and &amp;quot;soft&amp;quot; interrupt handlers. &lt;a href&#x3D;&quot;#fnref1&quot; class&#x3D;&quot;footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id&#x3D;&quot;fn2&quot;&gt;
+&lt;p&gt;It is also possible to have a pool of deferred tasks, in which each task can be tied to multiple interrupt handlers. &lt;a href&#x3D;&quot;#fnref2&quot; class&#x3D;&quot;footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/section&gt;
 </content>
 
         <author>

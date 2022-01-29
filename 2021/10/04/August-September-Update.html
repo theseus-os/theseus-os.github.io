@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>August/September Update: A Proper Terminal Emulator | Theseus OS Blog</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="description" content="Theseus OS Blog">
+    
+
+
+
+<!-- styles -->
+<link rel="stylesheet" href="/styles/vendor.css"/>
+<link rel="stylesheet" href="/styles/fonts.css"/>
+<link rel="stylesheet" href="/styles/app.css"/>
+<link rel="stylesheet" href="/styles/highlight.css"/>
+
+<!-- favicon -->
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.ico">
+<link rel="icon" type="image/svg+xml" href="/images/theseus_ship.svg">
+<link rel="manifest" href="/images/site.webmanifest">
+
+<meta name="msapplication-TileColor" content="#00aba9">
+<meta name="theme-color" content="#ffffff">
+
+ <!-- atom -->
+ <link type="application/atom+xml" rel="alternate" href="https://theseus-os.github.io/blog/feed.xml" title="Theseus OS Blog" />
+
+  </head>
+  <body>
+    <nav class="flex flex-row justify-center justify-end-l items-center flex-wrap ph2 pl3-ns pr4-ns">
+  <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
+    <a href="/">
+      <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
+      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+    </a>
+  </div>
+
+  <ul class="nav list w-100 w-auto-l flex flex-none flex-row flex-wrap justify-center justify-end-l items-center pv2 ph0 ph4-ns">
+    <li class="tc pv2 ph2 ph4-ns flex-20-s"><a href="https://github.com/theseus-os/Theseus">Theseus OS</a></li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s"><a href="https://theseus-os.github.io/Theseus/book/index.html">Theseus Book</a></li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s"><a href="https://theseus-os.github.io/Theseus/doc/___Theseus_Crates___/index.html">Source Docs</a></li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s"><a href="https://github.com/sponsors/kevinaboos">Sponsor Us</a></li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s"><a href="mailto:theseus.systems@gmail.com?subject=Interested in Theseus OS!">Email</a></li>
+  </ul>
+</nav>
+
+<section id="August/September Update: A Proper Terminal Emulator" class="white">
+  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+    <header>
+      <h2>August/September Update: A Proper Terminal Emulator</h2>
+      <div class="highlight mt2 mb3"></div>
+    </header>
+
+    <div class="publish-date-author">Oct. 4, 2021 &middot; Kevin Boos
+    
+    </div>
+
+    <div class="post">
+      <p>As mentioned in our <a href="./2021-08-02-June-July-2021-Update.md">previous update</a>, we're working to support headless operation in Theseus such that it can run in an seL4 guest VM, which doesn't support graphical displays.</p>
+<h2><a href="#going-headless-with-a-proper-terminal-interface" aria-hidden="true" class="anchor" id="going-headless-with-a-proper-terminal-interface"></a>Going Headless with a Proper Terminal Interface</h2>
+<p>We took a three-step approach towards realizing a proper headless interactive terminal:</p>
+<ol>
+<li>Removing the requirement that a graphical display (e.g., VGA device) must exist for Theseus to successfully boot.
+<ul>
+<li>Now, if no display devices are not found, bootstrap and init can proceed, and headless operation is assumed.</li>
+</ul>
+</li>
+<li>Devising a new input dataflow and event manager, with the serial port as the focal data source and sink.
+<ul>
+<li>Monitors input sources for new connections asynchronously and spawns handlers for them upon receival.</li>
+</ul>
+</li>
+<li>Create a new terminal emulator that:
+<ul>
+<li>Offers abstraction layers to support both graphical <em>and</em> non-graphical terminals.</li>
+<li>Supports conventional escape and control codes, compliant with most ANSI, VT100, and xterm.</li>
+</ul>
+</li>
+</ol>
+<h3><a href="#yet-another-serial-port-driver-redesign" aria-hidden="true" class="anchor" id="yet-another-serial-port-driver-redesign"></a>Yet Another Serial Port Driver Redesign</h3>
+<p>Our existing serial port driver was very simple -- it synchronously transmitted output bytes and simply dumped input bytes.
+Thus, the receive interrupt handler was trivially simple and executed quickly.</p>
+<p>However, the added complexity of doing actual work (e.g., spawning a new console/terminal instance) in the receive interrupt handler caused it to become prohibitively expensive to run.
+Executing long-running operations in an interrupt handler is unacceptable: <em>(i)</em> it prevents that CPU from doing any other work, and <em>(ii)</em> it harms system interactiveness by preventing other interrupts from being handled.</p>
+<p>To avoid this, we used Theseus's <a href="https://www.theseus-os.com/Theseus/doc/async_channel/index.html">asynchronous channels</a> to establish a communication channel between the serial port interrupt handler and a separate <em>listener</em> task.
+The listener task blocks until receiving a notification from any serial port, upon which it spawns a new console and terminal instance using that serial port and an input source and an output sink.</p>
+<p>This design has one drawback: it requires <a href="https://github.com/theseus-os/Theseus/commit/3e805f1799964f5b63c48d7ad6a072f130256445">proactively spawning a dedicated task just to listen for notifications from the serial port</a>.
+That led us to realize that it was time to introduce a better abstraction: deferred and/or linked interrupt handlers.</p>
+<h4><a href="#deferred-interrupt-handlers" aria-hidden="true" class="anchor" id="deferred-interrupt-handlers"></a>Deferred Interrupt Handlers</h4>
+<p>Theseus's <a href="https://www.theseus-os.com/Theseus/doc/deferred_interrupt_tasks/index.html">Deferred Interrupt Handlers</a> are an extension of the concept of &quot;bottom half&quot; and &quot;top half&quot; interrupt handlers<sup class="footnote-ref"><a href="#fn1" id="fnref1">1</a></sup>:</p>
+<ul>
+<li><em>Interrupt Handler</em> (aka &quot;top half&quot;): the short, latency-sensitive function that runs synchronously, immediately when the interrupt request is serviced. It typically does two things:
+<ol>
+<li>Notifies the deferred task that work is ready to be done (optionally providing details about that work), and</li>
+<li>Acknowledges the interrupt such that the hardware knows it was handled.</li>
+</ol>
+</li>
+<li><em>Deferred task</em> (aka &quot;bottom half&quot;): the more complex function that runs in a deferred manner to handle longer operations.
+<ul>
+<li>Runs asynchronously in a non-interrupt context and can thus perform more long-running operations without blocking the rest of that CPU's workloads.</li>
+</ul>
+</li>
+</ul>
+<p>Theseus's deferred interrupt handling implementation is conceptually similar to but differs from tasklets and workqueues in Linux.
+The deferred task is uniquely tied to an interrupt handler in a 1-to-1 manner upon creation and are fully type-safe; there is a direct, strongly-typed channel of communication between them<sup class="footnote-ref"><a href="#fn2" id="fnref2">2</a></sup>.
+The deferred task can also optionally be configured to execute immediately after the interrupt handler in order to reduce I/O device latency, thanks to scheduler integration.
+It also encourages adherence to the <em>separation of concerns</em> principle, as the interrupt handling functionality must be conciously divided into an &quot;urgent&quot; synchronous part and a deferred asynchronous part.</p>
+<p>With this new interrupt handling architecture, we were able to adapt the serial driver to use it efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
+The serial port is a simple case, as the interrupt handler only need to notify the deferred task that data has been received on the port and then acknowledge the interrupt; no other data exchange is needed.
+The deferred task can then read all received data from the serial port in a non-urgent manner and do anything else necessary, such as spawning new console/terminal instances.</p>
+<h4><a href="#splitting-the-serial-port-driver" aria-hidden="true" class="anchor" id="splitting-the-serial-port-driver"></a>Splitting the Serial Port Driver</h4>
+<p>TODO
+https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d</p>
+<h3><a href="#a-complete-terminal-emulator-rewrite" aria-hidden="true" class="anchor" id="a-complete-terminal-emulator-rewrite"></a>A Complete Terminal Emulator Rewrite</h3>
+<p>Finally, we began the most complicated component of true interactive headless operation: a terminal emulator.
+Theseus's existing terminal is fairly ad-hoc and doesn't conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to running commands and display their output.
+The same is true for Theseus's <code>stdio</code>, which is a &quot;quick-n-dirty&quot; inflexible implementation that uses heap buffers instead of a real file abstraction.</p>
+<p>As anyone who has dealt with this knows, terminal emulators are <em>exceedingly</em> and unexpectedly complex.
+We experimented with multiple iterations of the design, primarily centered around how best to represent each displayable &quot;unit&quot; or &quot;cell&quot; on the terminal display:</p>
+<ol>
+<li>The terminal grid stores a dynamic number of elements per line, in which each element can contain either a single character or a string of characters (no matter how wide) as long as they have the same style.
+<ul>
+<li>Easy to output to a text backend.</li>
+<li>The most memory efficient.</li>
+<li>Calculating line wrapping and cursor navigation is overly complex because each unit may have a different columnar display width.</li>
+</ul>
+</li>
+<li>The terminal grid stores a dynamic number of elements per line, but each element in the line can only contain a single <em>character</em>.
+<ul>
+<li>Slightly less memory efficient, as it duplicates units that have the same style.</li>
+<li>Easier to calculate displayed rows and cursor movement than design 1, but still complex.</li>
+</ul>
+</li>
+<li>The terminal grid stores a dynamic number of elements per line, but each element corresponds to a <em>single displayed column</em> on screen.
+<ul>
+<li>Requires more memory and a little bit of extra effort to support wide characters, since they must be split across more than one element.</li>
+<li>Much, much easier to calculate cursor movements, line wrapping, and display commands.</li>
+</ul>
+</li>
+<li>The terminal grid stores a fixed number of elements per line, equivalent to the width of the screen row; blank units are inserted to fill each linas necessary.
+<ul>
+<li>Very wasteful of memory, especially for short lines (common in terminal output).</li>
+<li>Trivial to calculate displayed rows and cursor movement.</li>
+<li>Very hard to re-size/re-flow the terminal.</li>
+</ul>
+</li>
+</ol>
+<p>After multiple iterations, we settled on <strong>Design 3</strong> above.
+It selects the best set of tradeoffs in the spectrum of design points, and most importantly, simplifies the translation between on-screen coordinates and scrollback buffer coordinate.</p>
+<p>One interesting aspect of Theseus's terminal emulator is that it is split into multiple components:</p>
+<ul>
+<li>The <em>frontend</em>: a single entity responsible for handling incoming character and control/escape code bytes and determining what actions should be taken.
+<ul>
+<li>The frontend is also reusable as a terminal driver, <code>readline</code> library, and line discipline layer.</li>
+</ul>
+</li>
+<li>The <em>backend</em> abstraction: a trait that represents the various display actions that a terminal might invoke.</li>
+<li>The <em>backend</em> implentation: one of multiple entity types that handles display actions to &quot;render&quot; the terminal output in different formats:
+<ul>
+<li>Graphical pixel framebuffers</li>
+<li>Classic 80x25 VGA screen with 16-color basic text display</li>
+<li>A serial port connected to a host-side pseudo-terminal</li>
+<li>A network connection or file or any other sink</li>
+</ul>
+</li>
+</ul>
+<p>However, this is still a work in progress and is not yet used for Theseus's main terminal display.
+It takes quite a lot of effort to get all the details right, but we have an MVP that supports:</p>
+<ul>
+<li>Insert/replace mode switching</li>
+<li>Automatic CR/LF behavior with wrapping</li>
+<li>Multiple different PTY backends, e.g., <code>screen</code>, <code>picocom</code>, <code>minicom</code>, etc</li>
+<li>Most ANSI escape/control codes, including colors and text styles</li>
+<li>Cursor movement and scrolling</li>
+</ul>
+<p>Fortunately, there are several Rust terminal emulators that serve as valuable examples, e.g., <a href="https://github.com/alacritty">Alacritty</a>, but they're standalone monolithic projects that rely on an underlying graphics stack like OpenGL and are thus inappropriate for in-kernel usage.
+We were able to use the excellent <a href="https://crates.io/crates/vte"><code>vte</code></a> crate from the Alacritty project though, which saved a lot of time and effort in parsing ANSI/VT100 control codes.</p>
+<blockquote>
+<p>Did you know that the &quot;grid&quot; of a terminal screen is indexed starting at <code>(1,1)</code> rather than <code>(0,0)</code> for the upper-leftmost character? <sup> Oh, how I wish I knew that earlier...</sup></p>
+</blockquote>
+<h2><a href="#other-improvements" aria-hidden="true" class="anchor" id="other-improvements"></a>Other Improvements</h2>
+<ul>
+<li>
+<p>Improved safety, complexity, and performance of <a href="https://github.com/theseus-os/Theseus/pull/419">interpreting a memory region as an executable function</a>.</p>
+<ul>
+<li>Previously called <code>MappedPages::as_func()</code>, now moved into the crate management subsystem as a member function of the <code>LoadedSection</code> type.</li>
+<li>The new <a href="https://www.theseus-os.com/Theseus/doc/crate_metadata/struct.LoadedSection.html#method.as_func"><code>LoadedSection::as_func()</code> method</a> already knows both the size of the function's section and whether the underlying memory is executable, which omits multiple runtime checks.</li>
+<li>The function interface is much simpler, as the caller need not specify any size or offset values w.r.t. the memory region.</li>
+<li>Improves safety: offers a compile-time guarantee that an executable function instance can only be obtained from a <code>LoadedSection</code> (with proper alignment and size) rather than any chunk of executable memory.</li>
+</ul>
+</li>
+<li>
+<p>Re-designed parts of the <a href="https://github.com/theseus-os/Theseus/commit/df721e35221d361f8ec8fd87364133f0be0f5cde"><code>Task</code> struct to reduce lock contention</a>, eliminating it in most places.</p>
+<ul>
+<li>&quot;Mutable&quot; fields (those that may change after <code>Task</code> creation) are now moved into a <code>TaskInner</code> struct (excluding atomic fields), which allows most fields to be accessed without acquiring the lock on that <code>Task</code>.</li>
+<li>Immutable fields are kept in the &quot;outer&quot; <code>Task</code> struct.</li>
+<li>We ensure atomic types are properly aligned and sized such that native atomic instructions are actually used. We realized this by switching from <code>atomic::Atomic</code> to <code>crossbeam_utils::atomic::AtomicCell</code>, plus static assertions that all types wrapped in <code>AtomicCell</code> are actually eligible for native atomic access.</li>
+<li>Move a Task's <code>ExitValue</code> out of its <code>RunState</code> enum so that the <code>RunState</code> enum can be accessed atomically and independently of an <code>ExitValue</code>.</li>
+<li>The <code>runstate</code> and <code>running_on_cpu</code> fields of <code>Task</code> are now atomically accessible in a lock-free manner, allowing us to block/unblock tasks in lock-free contexts, e.g., within an interrupt handler.</li>
+<li>As more <code>Task</code> fields are now readable without locking, we can remove all now-unnecessary unsafe statements from the <code>scheduler</code>.</li>
+</ul>
+</li>
+</ul>
+<section class="footnotes">
+<ol>
+<li id="fn1">
+<p>Other terminology is often used, including &quot;first-level&quot; and &quot;second-level&quot; interrupt handlers, or &quot;hard&quot; and &quot;soft&quot; interrupt handlers. <a href="#fnref1" class="footnote-backref">↩</a></p>
+</li>
+<li id="fn2">
+<p>It is also possible to have a pool of deferred tasks, in which each task can be tied to multiple interrupt handlers. <a href="#fnref2" class="footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+    </div>
+  </div>
+</section>
+
+    <footer>
+  <div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+    <div class="row">
+      <div class="four columns mt3 mt0-l" id="get-help">
+        <h4>More info</h4>
+        <ul>
+          <li><a href="https://github.com/theseus-os/Theseus/">Theseus OS on GitHub</a></li>
+          <li><a href="https://github.com/theseus-os/">Theseus OS Organization</a></li>
+          <li><a href="mailto:theseus.systems@gmail.com">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Terms and policies</h4>
+        <ul>
+          <li><a href="https://www.rust-lang.org/policies/code-of-conduct">Rust's Code of Conduct</a></li>
+          <li>Licenses:  <a href="https://opensource.org/licenses/MIT">MIT</a>  <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></li>
+          <li><a href="https://github.com/rust-lang/blog.rust-lang.org">Based on Rust's Blog Format</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Social</h4>
+        <div class="flex flex-row flex-wrap">
+          <a href="https://twitter.com/rustlang" target="_blank" rel="noopener" alt="twitter link"><img src="/images/twitter.svg" alt="twitter logo" title="Twitter"/></a>
+          <a href="https://www.youtube.com/channel/UCaYhcUwRBNscFNUKTjgPFiA" target="_blank" rel="noopener" alt="youtube link"><img style="padding-top: 6px; padding-bottom:6px" src="/images/youtube.svg" alt="youtube logo" title="YouTube"/></a>
+          <a href="https://discord.gg/rust-lang" target="_blank" rel="noopener" alt="discord link"><img src="/images/discord.svg" alt="discord logo" title="Discord"/></a>
+          <a href="https://github.com/rust-lang" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
+        </div>
+        <h4 class="mt4 mb3">RSS</h4>
+        <ul>
+          <li><a href="/feed.xml">Theseus Blog RSS Feed</a></li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="attribution">
+      Maintained by the Theseus OS organization. See a typo?
+      <a href="https://github.com/theseus-os/blog" target="_blank" rel="noopener">File an issue here</a>!
+    </div>
+  </div>
+</footer>
+
+<!-- scripts -->
+<script src="/scripts/highlight.js"></script>
+
+  </body>
+</html>
