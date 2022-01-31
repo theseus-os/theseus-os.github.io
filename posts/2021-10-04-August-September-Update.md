@@ -30,7 +30,7 @@ Executing long-running operations in an interrupt handler is unacceptable: *(i)*
 To avoid this, we used Theseus's [asynchronous channels](https://www.theseus-os.com/Theseus/doc/async_channel/index.html) to establish a communication channel between the serial port interrupt handler and a separate *listener* task.
 The listener task blocks until receiving a notification from any serial port, upon which it spawns a new console and terminal instance using that serial port and an input source and an output sink.
 
-This design has one drawback: it requires [proactively spawning a dedicated task just to listen for notifications from the serial port](https://github.com/theseus-os/Theseus/commit/3e805f1799964f5b63c48d7ad6a072f130256445).
+This design has one drawback: it requires [proactively spawning a dedicated task just to listen for notifications from the serial port](https://github.com/theseus-os/Theseus/blob/3e805f1799964f5b63c48d7ad6a072f130256445/kernel/console/src/lib.rs#L32-L39).
 That led us to realize that it was time to introduce a better abstraction: deferred and/or linked interrupt handlers.
 
 
@@ -47,23 +47,38 @@ Theseus's [Deferred Interrupt Handlers](https://www.theseus-os.com/Theseus/doc/d
 Theseus's deferred interrupt handling implementation is conceptually similar to but differs from tasklets and workqueues in Linux. 
 The deferred task is uniquely tied to an interrupt handler in a 1-to-1 manner upon creation and are fully type-safe; there is a direct, strongly-typed channel of communication between them[^2].
 The deferred task can also optionally be configured to execute immediately after the interrupt handler in order to reduce I/O device latency, thanks to scheduler integration.
-It also encourages adherence to the *separation of concerns* principle, as the interrupt handling functionality must be conciously divided into an "urgent" synchronous part and a deferred asynchronous part.
 
+Our favorite side benefit of this design is that itencourages adherence to the *separation of concerns* principle, as the interrupt handling functionality must be conciously divided into an "urgent" synchronous part and a deferred asynchronous part.
 
-With this new interrupt handling architecture, we were able to adapt the serial driver to use it efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
+With this new interrupt handling architecture, we were able to adapt the serial driver to work efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
 The serial port is a simple case, as the interrupt handler only need to notify the deferred task that data has been received on the port and then acknowledge the interrupt; no other data exchange is needed.
 The deferred task can then read all received data from the serial port in a non-urgent manner and do anything else necessary, such as spawning new console/terminal instances.
 
 
 #### Splitting the Serial Port Driver
-TODO
-https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d
+
+Theseus's design specifies a *tiny* minimal kernel boot image, the `nano_core` which must include only the bare minimum components to be able to bootstrap the OS and then dynamically load all other OS initialization components. 
+One of these components is the serial port driver, as it's the only real usable choice for early boot/kernel logging in the absence of display, networking, or file support.
+
+With the above additions to the serial port driver, namely the usage of deferred interrupts and channels, the driver was becoming far too complex.
+It had gone from having zero dependencies to having dozens. 
+That bloated the size of the `nano_core`, thereby harming the dynamicness of Theseus.
+
+To solve this, we [split the serial port driver into two parts](https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d):
+1. [Basic driver](https://www.theseus-os.com/Theseus/doc/serial_port_basic/index.html): a standalone crate that exposes the `SerialPort` type, which only offers functions to initialize, read from, and write to the device.
+2. [Full driver](https://www.theseus-os.com/Theseus/doc/serial_port/index.html): offers full I/O support with trait implementations, deferred interrupts, channel usage, task blocking, and more. 
+   * Wraps the basic driver's `SerialPort` type with additional functionality.
+
+
+This design enables two previously-conflicting goals:
+* The majority of system components can access the full functionality of the serial port and use it just like any other I/O device.
+* The kernel boot image is kept tiny with minimal dependencies whilst still being able to output logs to the serial port.
 
 
 ### A Complete Terminal Emulator Rewrite
 
 Finally, we began the most complicated component of true interactive headless operation: a terminal emulator.
-Theseus's existing terminal is fairly ad-hoc and doesn't conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to running commands and display their output.
+Theseus's existing terminal is fairly ad-hoc and doesn't conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to run commands and display their output.
 The same is true for Theseus's `stdio`, which is a "quick-n-dirty" inflexible implementation that uses heap buffers instead of a real file abstraction.
 
 As anyone who has dealt with this knows, terminal emulators are *exceedingly* and unexpectedly complex. 
@@ -87,11 +102,11 @@ We experimented with multiple iterations of the design, primarily centered aroun
 After multiple iterations, we settled on **Design 3** above.
 It selects the best set of tradeoffs in the spectrum of design points, and most importantly, simplifies the translation between on-screen coordinates and scrollback buffer coordinate.
 
-One interesting aspect of Theseus's terminal emulator is that it is split into multiple components:
+One interesting aspect of Theseus's terminal emulator is how it's split into multiple components:
  * The *frontend*: a single entity responsible for handling incoming character and control/escape code bytes and determining what actions should be taken.
    * The frontend is also reusable as a terminal driver, `readline` library, and line discipline layer.
  * The *backend* abstraction: a trait that represents the various display actions that a terminal might invoke.
- * The *backend* implentation: one of multiple entity types that handles display actions to "render" the terminal output in different formats:
+ * The *backend* implentation(s): one of multiple entity types that handles display actions to "render" the terminal output in different formats:
    * Graphical pixel framebuffers
    * Classic 80x25 VGA screen with 16-color basic text display
    * A serial port connected to a host-side pseudo-terminal

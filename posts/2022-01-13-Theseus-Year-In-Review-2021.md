@@ -14,7 +14,7 @@ Although 2021 not the first year of Theseus development, it _was_ the first whol
 4. Our focus shifted from prototyping research concepts to feature completeness, stabilization, and legacy compatibility.
 
 
-The rest of this blog entry is a work in progress. Check back soon!
+> The rest of this blog entry is a work in progress. Check back soon!
 
 
 <!-- ### Adding more features -->
