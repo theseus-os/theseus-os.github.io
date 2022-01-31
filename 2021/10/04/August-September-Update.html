@@ -87,7 +87,7 @@ Thus, the receive interrupt handler was trivially simple and executed quickly.</
 Executing long-running operations in an interrupt handler is unacceptable: <em>(i)</em> it prevents that CPU from doing any other work, and <em>(ii)</em> it harms system interactiveness by preventing other interrupts from being handled.</p>
 <p>To avoid this, we used Theseus's <a href="https://www.theseus-os.com/Theseus/doc/async_channel/index.html">asynchronous channels</a> to establish a communication channel between the serial port interrupt handler and a separate <em>listener</em> task.
 The listener task blocks until receiving a notification from any serial port, upon which it spawns a new console and terminal instance using that serial port and an input source and an output sink.</p>
-<p>This design has one drawback: it requires <a href="https://github.com/theseus-os/Theseus/commit/3e805f1799964f5b63c48d7ad6a072f130256445">proactively spawning a dedicated task just to listen for notifications from the serial port</a>.
+<p>This design has one drawback: it requires <a href="https://github.com/theseus-os/Theseus/blob/3e805f1799964f5b63c48d7ad6a072f130256445/kernel/console/src/lib.rs#L32-L39">proactively spawning a dedicated task just to listen for notifications from the serial port</a>.
 That led us to realize that it was time to introduce a better abstraction: deferred and/or linked interrupt handlers.</p>
 <h4><a href="#deferred-interrupt-handlers" aria-hidden="true" class="anchor" id="deferred-interrupt-handlers"></a>Deferred Interrupt Handlers</h4>
 <p>Theseus's <a href="https://www.theseus-os.com/Theseus/doc/deferred_interrupt_tasks/index.html">Deferred Interrupt Handlers</a> are an extension of the concept of &quot;bottom half&quot; and &quot;top half&quot; interrupt handlers<sup class="footnote-ref"><a href="#fn1" id="fnref1">1</a></sup>:</p>
@@ -106,17 +106,34 @@ That led us to realize that it was time to introduce a better abstraction: defer
 </ul>
 <p>Theseus's deferred interrupt handling implementation is conceptually similar to but differs from tasklets and workqueues in Linux.
 The deferred task is uniquely tied to an interrupt handler in a 1-to-1 manner upon creation and are fully type-safe; there is a direct, strongly-typed channel of communication between them<sup class="footnote-ref"><a href="#fn2" id="fnref2">2</a></sup>.
-The deferred task can also optionally be configured to execute immediately after the interrupt handler in order to reduce I/O device latency, thanks to scheduler integration.
-It also encourages adherence to the <em>separation of concerns</em> principle, as the interrupt handling functionality must be conciously divided into an &quot;urgent&quot; synchronous part and a deferred asynchronous part.</p>
-<p>With this new interrupt handling architecture, we were able to adapt the serial driver to use it efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
+The deferred task can also optionally be configured to execute immediately after the interrupt handler in order to reduce I/O device latency, thanks to scheduler integration.</p>
+<p>Our favorite side benefit of this design is that itencourages adherence to the <em>separation of concerns</em> principle, as the interrupt handling functionality must be conciously divided into an &quot;urgent&quot; synchronous part and a deferred asynchronous part.</p>
+<p>With this new interrupt handling architecture, we were able to adapt the serial driver to work efficiently without having unnecessary listener tasks wasting memory and CPU cycles.
 The serial port is a simple case, as the interrupt handler only need to notify the deferred task that data has been received on the port and then acknowledge the interrupt; no other data exchange is needed.
 The deferred task can then read all received data from the serial port in a non-urgent manner and do anything else necessary, such as spawning new console/terminal instances.</p>
 <h4><a href="#splitting-the-serial-port-driver" aria-hidden="true" class="anchor" id="splitting-the-serial-port-driver"></a>Splitting the Serial Port Driver</h4>
-<p>TODO
-https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d</p>
+<p>Theseus's design specifies a <em>tiny</em> minimal kernel boot image, the <code>nano_core</code> which must include only the bare minimum components to be able to bootstrap the OS and then dynamically load all other OS initialization components.
+One of these components is the serial port driver, as it's the only real usable choice for early boot/kernel logging in the absence of display, networking, or file support.</p>
+<p>With the above additions to the serial port driver, namely the usage of deferred interrupts and channels, the driver was becoming far too complex.
+It had gone from having zero dependencies to having dozens.
+That bloated the size of the <code>nano_core</code>, thereby harming the dynamicness of Theseus.</p>
+<p>To solve this, we <a href="https://github.com/theseus-os/Theseus/commit/d6b86b6c46004513735079bed47ae21fc5d4b29d">split the serial port driver into two parts</a>:</p>
+<ol>
+<li><a href="https://www.theseus-os.com/Theseus/doc/serial_port_basic/index.html">Basic driver</a>: a standalone crate that exposes the <code>SerialPort</code> type, which only offers functions to initialize, read from, and write to the device.</li>
+<li><a href="https://www.theseus-os.com/Theseus/doc/serial_port/index.html">Full driver</a>: offers full I/O support with trait implementations, deferred interrupts, channel usage, task blocking, and more.
+<ul>
+<li>Wraps the basic driver's <code>SerialPort</code> type with additional functionality.</li>
+</ul>
+</li>
+</ol>
+<p>This design enables two previously-conflicting goals:</p>
+<ul>
+<li>The majority of system components can access the full functionality of the serial port and use it just like any other I/O device.</li>
+<li>The kernel boot image is kept tiny with minimal dependencies whilst still being able to output logs to the serial port.</li>
+</ul>
 <h3><a href="#a-complete-terminal-emulator-rewrite" aria-hidden="true" class="anchor" id="a-complete-terminal-emulator-rewrite"></a>A Complete Terminal Emulator Rewrite</h3>
 <p>Finally, we began the most complicated component of true interactive headless operation: a terminal emulator.
-Theseus's existing terminal is fairly ad-hoc and doesn't conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to running commands and display their output.
+Theseus's existing terminal is fairly ad-hoc and doesn't conform to any real standards; it was implemented quickly as a summer intern project and offers just enough features to run commands and display their output.
 The same is true for Theseus's <code>stdio</code>, which is a &quot;quick-n-dirty&quot; inflexible implementation that uses heap buffers instead of a real file abstraction.</p>
 <p>As anyone who has dealt with this knows, terminal emulators are <em>exceedingly</em> and unexpectedly complex.
 We experimented with multiple iterations of the design, primarily centered around how best to represent each displayable &quot;unit&quot; or &quot;cell&quot; on the terminal display:</p>
@@ -150,7 +167,7 @@ We experimented with multiple iterations of the design, primarily centered aroun
 </ol>
 <p>After multiple iterations, we settled on <strong>Design 3</strong> above.
 It selects the best set of tradeoffs in the spectrum of design points, and most importantly, simplifies the translation between on-screen coordinates and scrollback buffer coordinate.</p>
-<p>One interesting aspect of Theseus's terminal emulator is that it is split into multiple components:</p>
+<p>One interesting aspect of Theseus's terminal emulator is how it's split into multiple components:</p>
 <ul>
 <li>The <em>frontend</em>: a single entity responsible for handling incoming character and control/escape code bytes and determining what actions should be taken.
 <ul>
@@ -158,7 +175,7 @@ It selects the best set of tradeoffs in the spectrum of design points, and most 
 </ul>
 </li>
 <li>The <em>backend</em> abstraction: a trait that represents the various display actions that a terminal might invoke.</li>
-<li>The <em>backend</em> implentation: one of multiple entity types that handles display actions to &quot;render&quot; the terminal output in different formats:
+<li>The <em>backend</em> implentation(s): one of multiple entity types that handles display actions to &quot;render&quot; the terminal output in different formats:
 <ul>
 <li>Graphical pixel framebuffers</li>
 <li>Classic 80x25 VGA screen with 16-color basic text display</li>

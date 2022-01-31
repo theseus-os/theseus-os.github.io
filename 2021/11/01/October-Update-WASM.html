@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>The Theseus OS Blog</title>
+    <title>[Draft] October 2021 Update: All about WASM | Theseus OS Blog</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="description" content="Theseus OS Blog">
     
@@ -47,61 +47,36 @@
   </ul>
 </nav>
 
-<header class="mt3 mt0-ns mb4-ns">
-  <br>
-  <div class="container flex flex-column flex-row-l justify-between-l">
-    
-      <p>Welcome to the <b>Theseus OS blog</b>, where Theseus OS maintainers announce development and progress updates.</p>
-    
-  </div>    
-  <div class="container flex flex-column flex-row-l justify-between-l">
-    
-  </div>
-</header>
+<section id="[Draft] October 2021 Update: All about WASM" class="white">
+  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+    <header>
+      <h2>[Draft] October 2021 Update: All about WASM</h2>
+      <div class="highlight mt2 mb3"></div>
+    </header>
 
-<section id="posts" class="posts">
-   <div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+    <div class="publish-date-author">Nov. 1, 2021 &middot; Kevin Boos
+    
+    </div>
 
-    <table class="post-list collapse w-100 f2-l f2-m f3-s">
-    
-      <tr>
-        <td class="bn"></td>
-        <td class="bn"><h3 class="f0-l f1-m f2-s mt4 mb0">Posts from 2022</h3></td>
-      </tr>
-      <tr>
-        <td class="tr o-60 pr4 pr5-l bn">Jan.&nbsp;13</td>
-        <td class="bn"><a href="/2022/01/13/Theseus-Year-In-Review-2021.html">2021: A Year in Review</a></td>
-      </tr>
-    
-      <tr>
-        <td class="bn"></td>
-        <td class="bn"><h3 class="f0-l f1-m f2-s mt4 mb0">Posts from 2021</h3></td>
-      </tr>
-      <tr>
-        <td class="tr o-60 pr4 pr5-l bn">Nov.&nbsp;1</td>
-        <td class="bn"><a href="/2021/11/01/October-Update-WASM.html">[Draft] October 2021 Update: All about WASM</a></td>
-      </tr>
-    
-      
-      <tr>
-        <td class="tr o-60 pr4 pr5-l bn">Oct.&nbsp;4</td>
-        <td class="bn"><a href="/2021/10/04/August-September-Update.html">August/September Update: A Proper Terminal Emulator</a></td>
-      </tr>
-    
-      
-      <tr>
-        <td class="tr o-60 pr4 pr5-l bn">Aug.&nbsp;2</td>
-        <td class="bn"><a href="/2021/08/02/June-July-2021-Update.html">June/July Update: Headless Operation on seL4</a></td>
-      </tr>
-    
-      
-      <tr>
-        <td class="tr o-60 pr4 pr5-l bn">June&nbsp;28</td>
-        <td class="bn"><a href="/2021/06/28/Hello-Theseus.html">Hello (World!) from Theseus</a></td>
-      </tr>
-    
-    </table>
+    <div class="post">
+      <h2><a href="#bringing-the-wonderful-world-of-wasm-to-theseus" aria-hidden="true" class="anchor" id="bringing-the-wonderful-world-of-wasm-to-theseus"></a>Bringing the Wonderful World of WASM to Theseus</h2>
+<p>Two concurrent projects to support WASM on Theseus:</p>
+<ol>
+<li>The simple approach: use the <code>wasmi</code> intepreter crate from parity-tech
+<ul>
+<li>Relatively simple, as <code>wasmi</code> is <code>no_std</code>-compliant and requires only minimal interfacing with the host platform in order to use it</li>
+<li>Implement WASI system calls as needed, which is the glue between the WASM environment and the rest of Theseus</li>
+</ul>
+</li>
+<li>The complex approach: port the <code>wasmtime</code> WASM runtime project to Theseus
+<ul>
+<li>Massively complex with dozens of platform-specific logic and API calls</li>
+<li>Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features</li>
+</ul>
+</li>
+</ol>
 
+    </div>
   </div>
 </section>
 
