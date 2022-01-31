@@ -206,6 +206,7 @@ impl<'a> Generator<'a> {
         dir::copy("static/images", &self.out_directory, &options)?;
         dir::copy("static/styles", &self.out_directory, &options)?;
         dir::copy("static/scripts", &self.out_directory, &options)?;
+        dir::copy("static/FontAwesome", &self.out_directory, &options)?;
 
         Ok(())
     }
