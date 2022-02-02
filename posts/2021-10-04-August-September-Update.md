@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "August/September Update: A Proper Terminal Emulator"
-author: Kevin Boos
+author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 

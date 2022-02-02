@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Hello (World!) from Theseus"
-author: Kevin Boos
+author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 

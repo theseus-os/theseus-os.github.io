@@ -21,6 +21,7 @@ pub(crate) struct Post {
     pub(crate) layout: String,
     pub(crate) title: String,
     pub(crate) author: String,
+    pub(crate) author_url: String,
     pub(crate) year: i32,
     pub(crate) show_year: bool,
     pub(crate) month: u32,
@@ -56,7 +57,7 @@ impl Post {
         let end_of_yaml = contents[4..].find("---").unwrap() + 4;
         let yaml = &contents[..end_of_yaml];
         let YamlHeader {
-            author,
+            author: author_string,
             title,
             release,
             team: team_string,
@@ -109,6 +110,24 @@ impl Post {
             panic!("blog post at path `{}` lacks team metadata", path.display());
         }
 
+        // The author string should look like `author-text <author-url>`
+        let (author, author_url) = {
+            lazy_static::lazy_static! {
+                static ref R: Regex = Regex::new(r"(?P<name>[^<]*) <(?P<url>[^>]+)>").unwrap();
+            }
+            let captures = match R.captures(&author_string) {
+                Some(c) => c,
+                None => panic!(
+                    "Error: author from path `{}` should have format `$name <$url>`. If no author URL is desired, simply use `<#>`.",
+                    path.display()
+                ),
+            };
+            (
+                captures["name"].to_string(),
+                captures["url"].to_string(),
+            )
+        };
+
         // If they supplied team, it should look like `team-text <team-url>`
         let (team, team_url) = match team_string {
             Some(s) => {
@@ -135,6 +154,7 @@ impl Post {
             filename,
             title,
             author,
+            author_url,
             year,
             show_year: false,
             month,

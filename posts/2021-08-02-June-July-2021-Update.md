@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "June/July Update: Headless Operation on seL4"
-author: Kevin Boos
+author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 

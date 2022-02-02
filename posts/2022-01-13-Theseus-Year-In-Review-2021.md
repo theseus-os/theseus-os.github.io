@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "2021: A Year in Review"
-author: Kevin Boos
+author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 

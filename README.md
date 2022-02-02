@@ -25,6 +25,11 @@ From there, the generated HTML will be in the `site` directory. You can use any 
 > python3 -m http.server
 ```
 
+or, as a convenient one-liner:
+```
+cargo run && (cd site && python3 -m http.server) 
+```
+
 The site is now available to browse locally at <http://0.0.0.0:8000>.
 
 
@@ -37,10 +42,12 @@ When writing a new blog post, keep in mind the file headers:
 ---
 layout: post
 title: Title of the blog post.
-author: Blog post author(s).
-release: true if it's a post about a formal release of Theseus; false otherwise.
+author: FirstName LastName <AuthorURL>
+release: `true` if it's a post about a formal release of Theseus; `false` otherwise.
 ---
 ```
+
+If an author doesn't have or isn't willing to provide a URL, simply use `<#>`.
 
 ### License
 

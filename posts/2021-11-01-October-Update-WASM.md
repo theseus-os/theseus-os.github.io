@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "[Draft] October 2021 Update: All about WASM"
-author: Kevin Boos
+author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 
