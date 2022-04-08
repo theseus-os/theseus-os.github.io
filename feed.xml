@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-02-02T20:50:24+00:00</updated>
+    <updated>2022-04-08T18:58:04+00:00</updated>
 
     
     <entry>
@@ -51,27 +51,59 @@ Our sincere thanks to:&lt;/p&gt;
     </entry>
     
     <entry>
-        <title>[Draft] October 2021 Update: All about WASM</title>
-        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/11/01/October-Update-WASM.html" type="text/html" title="[Draft] October 2021 Update: All about WASM" />
+        <title>October 2021 Update: All about WASM</title>
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2021/11/01/October-Update-WASM.html" type="text/html" title="October 2021 Update: All about WASM" />
         <published>2021-11-01T00:00:00+00:00</published>
         <updated>2021-11-01T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/blog/2021/11/01/October-Update-WASM.html</id>
         <content type="html" xml:base="https://theseus-os.github.io/blog/2021/11/01/October-Update-WASM.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#bringing-the-wonderful-world-of-wasm-to-theseus&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;bringing-the-wonderful-world-of-wasm-to-theseus&quot;&gt;&lt;/a&gt;Bringing the Wonderful World of WASM to Theseus&lt;/h2&gt;
-&lt;p&gt;Two concurrent projects to support WASM on Theseus:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Theseus&#x27;s newest goal is to be a &lt;strong&gt;WASM-native&lt;/strong&gt; system, in which a fully-featured WASM runtime can execute in a bare metal environment.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href&#x3D;&quot;https://webassembly.org/&quot;&gt;WebAssembly&lt;/a&gt; (WASM) is a powerful new binary instruction format that offers a &amp;quot;sandboxed&amp;quot; execution environment based on a simple machine model.
+WASM&#x27;s goal is to allow code from a variety of programming languages to be easily deployed on and performantly executed within a web browser-provided environment, effectively realizing the portability dream once envisioned by Java&#x27;s bytecode format.&lt;/p&gt;
+&lt;p&gt;In addition, multiple extensions to the standard help to expand WASM&#x27;s functionality beyond just what is offered by most browsers.
+The most notable is &lt;a href&#x3D;&quot;https://github.com/WebAssembly/WASI&quot;&gt;WASI&lt;/a&gt;, the WebAssembly System Interface, which extends WASM&#x27;s core functionality with common system-provided features like standard I/O, filesystems, clocks and timekeeping, and more.&lt;/p&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#why-wasm-on-theseus&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;why-wasm-on-theseus&quot;&gt;&lt;/a&gt;Why WASM on Theseus?&lt;/h3&gt;
+&lt;p&gt;WASM is the solution to one of the major downsides of safe-language OSes: all components must be written in a safe language in order to uphold the isolation and safety guarantees provided by said language compiler.
+This can make it tedious or impossible to support legacy components and interfaces.&lt;/p&gt;
+&lt;p&gt;With a WASM runtime, Theseus could safely load and run software modules written in any arbitrary unsafe language!
+All you&#x27;d need to do is compile them into a WASM module, which is quite easy thanks to most major languages supporting WASM targets.
+This will also make it significantly easier to run legacy components with complex dependency chains atop Theseus, as we can bundle them all up into self-contained WASM modules with little to no external dependencies.&lt;/p&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#how-do-we-get-there&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;how-do-we-get-there&quot;&gt;&lt;/a&gt;How do we get there?&lt;/h3&gt;
+&lt;p&gt;To bring WASM to Theseus, we have started two concurrent projects:&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;The simple approach: use the &lt;code&gt;wasmi&lt;/code&gt; intepreter crate from parity-tech
+&lt;li&gt;The simple approach: use the &lt;a href&#x3D;&quot;https://github.com/paritytech/wasmi&quot;&gt;&lt;code&gt;wasmi&lt;/code&gt; intepreter crate from parity-tech&lt;/a&gt;
 &lt;ul&gt;
 &lt;li&gt;Relatively simple, as &lt;code&gt;wasmi&lt;/code&gt; is &lt;code&gt;no_std&lt;/code&gt;-compliant and requires only minimal interfacing with the host platform in order to use it&lt;/li&gt;
-&lt;li&gt;Implement WASI system calls as needed, which is the glue between the WASM environment and the rest of Theseus&lt;/li&gt;
+&lt;li&gt;We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus&#x27;s subsystems&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;The complex approach: port the &lt;code&gt;wasmtime&lt;/code&gt; WASM runtime project to Theseus
+&lt;li&gt;The complex approach: port the &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime&quot;&gt;&lt;code&gt;wasmtime&lt;/code&gt; WASM runtime project&lt;/a&gt; to Theseus
 &lt;ul&gt;
 &lt;li&gt;Massively complex with dozens of platform-specific logic and API calls&lt;/li&gt;
 &lt;li&gt;Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;&lt;a href&#x3D;&quot;https://github.com/vikrammullick&quot;&gt;Vikram Mullick&lt;/a&gt; has begun working on part 1 above as part of his senior capstone project at Yale.
+&lt;a href&#x3D;&quot;https://github.com/kevinaboos&quot;&gt;Kevin Boos&lt;/a&gt; has begun working on part 2 above, and will also assist with part 1 as needed.&lt;/p&gt;
+&lt;p&gt;Due to the complex nature of &lt;code&gt;wasmtime&lt;/code&gt; with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Theseus can &amp;quot;quickly&amp;quot; get up and running with basic WASM support, allowing us to:
+&lt;ul&gt;
+&lt;li&gt;Experiment with running legacy components as WASM modules&lt;/li&gt;
+&lt;li&gt;Begin implementing support for WASI and other key WASM interfaces, e.g., WebGL&lt;/li&gt;
+&lt;li&gt;Integrate Theseus&#x27;s existing runtime loading and linking infrastructure with WASM&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;We can leverage the existing WASM and WASI infrastructure layers to more easily support &lt;code&gt;wasmtime&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;This will realize a ~10x performance improvement over the initial &lt;code&gt;wasmi&lt;/code&gt;, without wasting the initial &lt;code&gt;wasmi&lt;/code&gt;-based efforts&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We look forward to announcing WASM support for Theseus and realizing its full potential as a WASM-native system.&lt;/p&gt;
 </content>
 
         <author>
