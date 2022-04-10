@@ -13,15 +13,30 @@ Although 2021 not the first year of Theseus development, it _was_ the first whol
 3. Theseus received funding for open-source development from industry (yay!).
 4. Our focus shifted from prototyping research concepts to feature completeness, stabilization, and legacy compatibility.
 
+Thanks to all the folks who contributed, advised, and interacted with myself and the rest of the Theseus team this year! 
 
-> The rest of this blog entry is a work in progress. Check back soon!
+We had an explosion of interest on GitHub:
+![theseus-github-screenshot](/images/2022-posts/theseus-github-sshot.png)
+
+And official funding from Futurewei to continue Theseus development!
+![futurewei](/images/2022-posts/futurewei.png) ![theseus](/images/theseus_ship.jpg)
 
 
-<!-- ### Adding more features -->
+> We look forward to another productive year! Time to get Theseus onto some real devices! ^hint ^hint
 
-
-
-<!-- ### Legacy compatibility -->
+#### Recap: major new developments
+* Ability to build out-of-tree crates against Theseus using `theseus_cargo`
+    * A novel extension of cargo to support building against prebuilt dependencies 
+* Basic WASM execution (using `wasmi` interpreter) with core WASI support
+    * Coming soon!
+* Continuing efforts to support headless, no-graphics operation
+* General legacy compatibility improvements, including a fuller libc implementation
+* Generic, dynamic, and arbitrary thread-local storage (TLS), plus a Rust-like `thread_local!()` macro
+* Tons of documentation, plus auto-published source docs and book docs!
+* A full redesign of ergonomic and composable traits for device I/O, plus FAT FS support
+* Performance and ergonomics improvements to the page and frame allocators
+* Deferred interrupt handling tasks for better device driver performance and system interactivity  
+* and many more!
 
 
 
