@@ -19,10 +19,13 @@ We had an explosion of interest on GitHub:
 ![theseus-github-screenshot](/images/2022-posts/theseus-github-sshot.png)
 
 And official funding from Futurewei to continue Theseus development!
-![futurewei](/images/2022-posts/futurewei.png) ![theseus](/images/theseus_ship.jpg)
+![Futurewei plus Theseus collab](/images/2022-posts/futurewei_plus_theseus.png)
 
 
-> We look forward to another productive year! Time to get Theseus onto some real devices! ^hint ^hint
+
+> We look forward to another productive year!
+>
+> Time to get Theseus onto some real devices! <sup>hint hint</sup>
 
 #### Recap: major new developments
 * Ability to build out-of-tree crates against Theseus using `theseus_cargo`
