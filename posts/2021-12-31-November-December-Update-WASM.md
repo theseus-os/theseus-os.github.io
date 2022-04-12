@@ -32,37 +32,45 @@ Once WASM support is officially in the main branch, we will offer an easier comm
 ## Progress on Porting `wasmtime` to Theseus
 While the interpreted WASM project is wrapping up, the port of `wasmtime` is just getting started.
 
-TODO: finish this
+As described in [`wasmtime`'s documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
+The top-level crate is aptly named `wasmtime`, and it primarily exposes a safe API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them.
 
-TODO: describe the basic architecture of all the crates in the wasmtime tree. Taking a bottom-up approach. It was relatively quick to port the initial four lowest-level crates to a `no_std` environment, but the `wasmtime-runtime` crate is a massive one that will take months to support, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.
+### Bottom-up approach -- off to a strong start 
+We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
+A diagram of the key crates that we care about and need to port is below.
+![diagram of wasmtime key crates](/images/2021-ports/wasmtime-crate-structure.png)
 
-
-TODO: describe thread-local storage
-
-
-------------------------
-Submitted no_std port for the more-asserts crate, was merged in by the maintainer.
-Submitted a PR to the indexmap crate that unifies the downstream API across std and no_std crates
-This is used widely across wasmtime crates
-Submitted a PR to the object crate that supports the object file writing abilities in no_std environment
-Submitted a PR to the crc32fast crate that offers fast versions of the crc32 hashing algorithm to fix its incorrect feature gating for SSE instructions
-Working on porting the `region` crate to Theseus, which supports virtual memory-related operations, e.g., mlock, mprotect, etc.
----------------------------
+As such, the top-level `wasmtime` crate will be the *last* one that we port to Theseus.
+So far, we have been able to quickly adapt the following bottom-most crates to `no_std` environments, as they are relatively standalone:
+* `wasmparser`: an external (non-wasmtime) tool for parsing WASM binaries
+* `wasmtime-types`: definitions for core WASM types and execution concepts
+* `wasmtime-environ`: support for abstract definitions of compiler environment and features, enabling easy use of the cranelift backend for JIT
+* `cranelift-entity`: core data structures used by the Cranelift code generator  
 
 
---------------------------------------
-Add ports folder for libc and other Theseus-specific ports of third-party crates (#468)
+In addition, we had to modify the following crates that were dependencies of wasmtime in order to support `no_std` environments. We submitted PRs to each crate's upstream repository, some of which have already been accepted. Thanks to those authors/maintainers!
+* `object`: PR to [allow `no_std` environments to *write*, not just read, object files](https://github.com/gimli-rs/object/pull/400)
+* `more_asserts`: a trivial PR to [add `no_std` support](https://github.com/thomcc/rust-more-asserts/pull/6)
+* `crc32fast`: a tricky fix to [compilation for targets that lack some SIMD hardware features](https://github.com/srijs/rust-crc32fast/pull/22) 
+* `indexmap`: PR to [unify the API between `std` and `no_std` users](https://github.com/bluss/indexmap/pull/207) of `indexmap` data structures
+    * Unfortunately, this one has been delayed due to `indexmap`'s non-standard usage of features and auto-`std` feature detection
 
-* Change compiler target specs to use "theseus" as the `target_os`
 
-* Reorganize third-party crates:
-    * `libs/` still contains standalone third-party crates that don't depend on Theseus.
-    * `ports/` is new and contains third-party crates that have been ported to depend on Theseus-specific crates (such as those in `kernel/`).
+### Looking forward in (wasm)time
+The main challenge in porting `wasmtime` to Theseus is porting the `wasmtime-runtime` crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
+This crate is massive and will likely take months to complete, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.
 
-* Finished porting `object`'s write feature to no_std, PR in progress.
+We'll start by tackling the main dependencies of `wasmtime-runtime`, most of which are based around legacy POSIX-style interfaces and traditional OS platform abstractions:
+* Unix-like memory mapping and protection
+* Signal/trap handling 
+* Thread-local storage
+* Stack introspection and backtracing
+* File and I/O abstractions 
+* Exception (panic) handling and unwinding resumption 
 
-* Finished porting `region` to Theseus.
------------------------------
+
+Look for updates in the next post!
+
 
 ## Miscellaneous Contributions
 * Kevin wrote a [new book chapter](https://www.theseus-os.com/Theseus/book/subsystems/task.html) about how Theseus's task management subsystem works.

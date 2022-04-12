@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "January 2022 Update: WASM has landed!"
+title: "WASM has landed!"
 author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
@@ -33,26 +33,6 @@ wasm /extra_files/wasm/exorbitant.wasm
 
 ![exorbitant demo](/images/2022-posts/exorbitant-wasm.png)
 
+--------------------
 
-## More libc support + better `theseus_cargo`
-As part of the efforts to port `wasmtime` to Theseus, more improvements were made to Theseus's support for legacy interfaces like libc. The `wasmtime` runtime depends on libc-defined functions and types quite heavily, e.g., `mmap`, signal handling, and more.
-
------------------------------
-Finally got libc and tlibc to work together with external rust crates in a full build
-Can run both C tests and Rust tests for libc + tlibc
-Basic memory mapping functions (mmap) and printing (printf) are working properly
-Major improvements to the theseus_cargo tool 
-Supports more complex builds with native dependencies (e.g., C code linked to Rust code)
-Supports more crate-types beyond “lib” and “rlib”, such as “staticlib”
----------------------------------
-
-
-Improved the page allocator to allow it to merge contiguous freed chunks 
- --- Needed for loading larger C files at a fixed address
-Need to work on creating position-independent executables
-  --- Loading multiple C executables always at a fixed address (0x400000) cannot possibly work
-
-
-Finally fixed the issues with tlibc, libc, C code, and theseus_cargo builds all working together properly. Everything now works as expected!
------------------------------------
-
+Our work on `wasmtime` atop Theseus is still ongoing. Please check back for more updates soon!
