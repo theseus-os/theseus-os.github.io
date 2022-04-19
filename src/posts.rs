@@ -34,6 +34,10 @@ pub(crate) struct Post {
     pub(crate) has_team: bool,
     pub(crate) team: String,
     pub(crate) team_url: String,
+    pub(crate) has_prev: bool,
+    pub(crate) prev: String,
+    pub(crate) has_next: bool,
+    pub(crate) next: String,
 }
 
 impl Post {
@@ -168,6 +172,11 @@ impl Post {
             has_team: team.is_some(),
             team: team.unwrap_or_default(),
             team_url: team_url.unwrap_or_default(),
+            // the links to next/previous post are set up later
+            has_prev: false, 
+            prev: String::new(),
+            has_next: false,
+            next: String::new(),
         })
     }
 

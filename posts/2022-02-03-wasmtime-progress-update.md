@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Progress porting `wasmtime-runtime` to Theseus"
+title: "Progress porting wasmtime-runtime to Theseus"
 author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---

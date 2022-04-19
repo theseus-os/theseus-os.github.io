@@ -13,6 +13,13 @@
     <div class="post">
       {{{ post.contents }}}
     </div>
+
+    <div>
+      <br />
+      <hr>
+      {{#if post.has_prev}} <a href="{{post.prev}}" style="float: left;"><< Previous Post</a>  {{/if}}
+      {{#if post.has_next}} <a href="{{post.next}}" style="float: right;">Next Post >></a>  {{/if}}
+    </div>
   </div>
 </section>
 {{/inline}}

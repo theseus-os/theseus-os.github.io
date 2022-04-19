@@ -65,6 +65,21 @@ impl Blog {
                 post.year, post.month, post.day, post.title
             )
         });
+
+        // Populate previous and next post links at the bottom of the post
+        let populate_next_prev = |chunk: &mut [Post]| {
+            chunk[0].next     = format!("../../../{}", chunk[1].url);
+            chunk[0].has_next = true;
+            chunk[1].prev     = format!("../../../{}", chunk[0].url);
+            chunk[1].has_prev = true;
+        };
+        for chunk in posts.chunks_exact_mut(2) {
+            populate_next_prev(chunk);
+        }
+        for chunk in &mut posts[1..].chunks_exact_mut(2) {
+            populate_next_prev(chunk);
+        }
+
         posts.reverse();
 
         // Decide which posts should show the year in the index.

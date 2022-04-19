@@ -38,10 +38,10 @@ The top-level crate is aptly named `wasmtime`, and it primarily exposes a safe A
 ### Bottom-up approach -- off to a strong start 
 We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
 A diagram of the key crates that we care about and need to port is below.
-![diagram of wasmtime key crates](/images/2021-ports/wasmtime-crate-structure.png)
+![diagram of wasmtime key crates](/images/2021-posts/wasmtime-crate-structure.png)
 
 As such, the top-level `wasmtime` crate will be the *last* one that we port to Theseus.
-So far, we have been able to quickly adapt the following bottom-most crates to `no_std` environments, as they are relatively standalone:
+So far, we have been able to quickly adapt the following bottom-most crates (shown in green above) to `no_std` environments, as they are relatively standalone:
 * `wasmparser`: an external (non-wasmtime) tool for parsing WASM binaries
 * `wasmtime-types`: definitions for core WASM types and execution concepts
 * `wasmtime-environ`: support for abstract definitions of compiler environment and features, enabling easy use of the cranelift backend for JIT
