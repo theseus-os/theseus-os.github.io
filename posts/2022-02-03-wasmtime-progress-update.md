@@ -89,15 +89,20 @@ Hopefully this feature restriction doesn't pose a problem in the future.
 
 
 ### Supporting Thread-Local Storage on Theseus
-TODO: describe thread-local storage
+[Thread-Local Storage (TLS)](https://en.wikipedia.org/wiki/Thread-local_storage) allows one to declare a variable that will be instantiated on a per-thread basis, with each thread having its own local copy that other threads cannot access.
+This is useful for many reasons, e.g., programming conveniencce, performant access to thread-specific data without locking, etc.
+Our motivation for finally supporting it in its ultimate flexible form -- the ELF standard TLS areas -- stemmed from `wasmtime-runtime`, which uses it in myriad ways.
 
-TODO: describe how unique this is due to Theseus's approach of loading and linking all crates and runtime 
+> Note: previously, Theseus offered a cheap imitation of TLS using the GS register to store limited, targeted data about each task, but it wasn't usable by any applications, libraries, or even other non-`task` kernel crates.
 
-* [Thread-Local Storage (TLS)](https://github.com/theseus-os/Theseus/commit/3e6c50a0a45560057c6a35db4ce220760e362962) areas
-  * Theseus also supports [TLS defined in application and kernel crates loaded at runtime](https://github.com/theseus-os/Theseus/commit/fd1f11d99f1b4252abb35fffe7ae45f9f7ca616b)
-  * We also ported [Rust's `thread_local!()` macro](https://github.com/theseus-os/Theseus/commit/dd62aff423e1deceed503e3341827ba1e04dce79), which offers lazy dynamic init and cleanup of TLS areas
+We implemented TLS support [across several commits](https://github.com/theseus-os/Theseus/commit/3e6c50a0a45560057c6a35db4ce220760e362962).
+This was a suprisingly complex and tricky implementation that required a lot of trial-and-error experimentation to determine how to correctly layout each TLS object in the per-task TLS area.
 
+Another complicating factor is that Theseus loads and links all crates at runtime, which means that our implementation [must support both statically-linked TLS areas from the base kernel image as well as newcomers found in dynamically-loaded crates](https://github.com/theseus-os/Theseus/commit/fd1f11d99f1b4252abb35fffe7ae45f9f7ca616b).
+There are a lot of tradeoffs herein as it relates to reserving and allocating offset ranges in the TLS space for TLS data sections, tracking TLS data sections per namespace, per crate, etc -- but these are best saved for a separate post about TLS.
 
+We went a step further by implementing [Rust's `thread_local!()` macro](https://github.com/theseus-os/Theseus/commit/dd62aff423e1deceed503e3341827ba1e04dce79) for any Theseus crate, which offers lazy dynamic initialization and cleanup of TLS areas.
+This overcomes the limitations of standard ELF TLS sections, which behave like `static` globals in Rust: they are `const`-initialized and never dropped.
 
 ### Porting the `object` crate to Theseus
 The `object` crate is standalone and doesn't need to be ported to Theseus specifically, thus we can simply port it to `no_std` and place it in Theseus's `libs/` directory. 
