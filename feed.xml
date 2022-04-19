@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-04-19T05:24:59+00:00</updated>
+    <updated>2022-04-19T07:18:36+00:00</updated>
 
     
     <entry>
@@ -67,8 +67,8 @@
     </entry>
     
     <entry>
-        <title>Progress porting &#x60;wasmtime-runtime&#x60; to Theseus</title>
-        <link rel="alternate" href="https://theseus-os.github.io/blog/2022/02/03/wasmtime-progress-update.html" type="text/html" title="Progress porting &#x60;wasmtime-runtime&#x60; to Theseus" />
+        <title>Progress porting wasmtime-runtime to Theseus</title>
+        <link rel="alternate" href="https://theseus-os.github.io/blog/2022/02/03/wasmtime-progress-update.html" type="text/html" title="Progress porting wasmtime-runtime to Theseus" />
         <published>2022-02-03T00:00:00+00:00</published>
         <updated>2022-02-03T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/blog/2022/02/03/wasmtime-progress-update.html</id>
@@ -340,9 +340,9 @@ The top-level crate is aptly named &lt;code&gt;wasmtime&lt;/code&gt;, and it pri
 &lt;h3&gt;&lt;a href&#x3D;&quot;#bottom-up-approach----off-to-a-strong-start&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;bottom-up-approach----off-to-a-strong-start&quot;&gt;&lt;/a&gt;Bottom-up approach -- off to a strong start&lt;/h3&gt;
 &lt;p&gt;We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
 A diagram of the key crates that we care about and need to port is below.
-&lt;img src&#x3D;&quot;/images/2021-ports/wasmtime-crate-structure.png&quot; alt&#x3D;&quot;diagram of wasmtime key crates&quot; /&gt;&lt;/p&gt;
+&lt;img src&#x3D;&quot;/images/2021-posts/wasmtime-crate-structure.png&quot; alt&#x3D;&quot;diagram of wasmtime key crates&quot; /&gt;&lt;/p&gt;
 &lt;p&gt;As such, the top-level &lt;code&gt;wasmtime&lt;/code&gt; crate will be the &lt;em&gt;last&lt;/em&gt; one that we port to Theseus.
-So far, we have been able to quickly adapt the following bottom-most crates to &lt;code&gt;no_std&lt;/code&gt; environments, as they are relatively standalone:&lt;/p&gt;
+So far, we have been able to quickly adapt the following bottom-most crates (shown in green above) to &lt;code&gt;no_std&lt;/code&gt; environments, as they are relatively standalone:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;wasmparser&lt;/code&gt;: an external (non-wasmtime) tool for parsing WASM binaries&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime-types&lt;/code&gt;: definitions for core WASM types and execution concepts&lt;/li&gt;

@@ -104,9 +104,9 @@ The top-level crate is aptly named <code>wasmtime</code>, and it primarily expos
 <h3><a href="#bottom-up-approach----off-to-a-strong-start" aria-hidden="true" class="anchor" id="bottom-up-approach----off-to-a-strong-start"></a>Bottom-up approach -- off to a strong start</h3>
 <p>We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
 A diagram of the key crates that we care about and need to port is below.
-<img src="/images/2021-ports/wasmtime-crate-structure.png" alt="diagram of wasmtime key crates" /></p>
+<img src="/images/2021-posts/wasmtime-crate-structure.png" alt="diagram of wasmtime key crates" /></p>
 <p>As such, the top-level <code>wasmtime</code> crate will be the <em>last</em> one that we port to Theseus.
-So far, we have been able to quickly adapt the following bottom-most crates to <code>no_std</code> environments, as they are relatively standalone:</p>
+So far, we have been able to quickly adapt the following bottom-most crates (shown in green above) to <code>no_std</code> environments, as they are relatively standalone:</p>
 <ul>
 <li><code>wasmparser</code>: an external (non-wasmtime) tool for parsing WASM binaries</li>
 <li><code>wasmtime-types</code>: definitions for core WASM types and execution concepts</li>
@@ -145,6 +145,13 @@ This crate is massive and will likely take months to complete, due to its many d
 </ul>
 
     </div>
+
+    <div>
+      <br />
+      <hr>
+       <a href="../../../2021/11/01/October-Update-WASM.html" style="float: left;"><< Previous Post</a>  
+       <a href="../../../2022/01/13/Theseus-Year-In-Review-2021.html" style="float: right;">Next Post >></a>  
+    </div>
   </div>
 </section>
 
@@ -173,7 +180,7 @@ This crate is massive and will likely take months to complete, due to its many d
           <a href="https://twitter.com/rustlang" target="_blank" rel="noopener" alt="twitter link"><img src="/images/twitter.svg" alt="twitter logo" title="Twitter"/></a>
           <a href="https://www.youtube.com/c/KevinBoosPhD" target="_blank" rel="noopener" alt="youtube link"><img style="padding-top: 6px; padding-bottom:6px" src="/images/youtube.svg" alt="youtube logo" title="YouTube"/></a>
           <a href="https://discord.gg/rust-lang" target="_blank" rel="noopener" alt="discord link"><img src="/images/discord.svg" alt="discord logo" title="Discord"/></a>
-          <a href="https://github.com/rust-lang" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
+          <a href="https://github.com/theseus-os" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
         </div>
         <h4 class="mt4 mb3">RSS</h4>
         <ul>
