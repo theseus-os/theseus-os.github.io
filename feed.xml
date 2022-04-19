@@ -10,61 +10,8 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-04-19T07:18:36+00:00</updated>
+    <updated>2022-04-19T07:19:36+00:00</updated>
 
-    
-    <entry>
-        <title>Spring 2022 Update: &#x60;wasmtime-runtime&#x60; Progress</title>
-        <link rel="alternate" href="https://theseus-os.github.io/blog/2022/04/02/wasmtime-progress-update.html" type="text/html" title="Spring 2022 Update: &#x60;wasmtime-runtime&#x60; Progress" />
-        <published>2022-04-02T00:00:00+00:00</published>
-        <updated>2022-04-02T00:00:00+00:00</updated>
-        <id>https://theseus-os.github.io/blog/2022/04/02/wasmtime-progress-update.html</id>
-        <content type="html" xml:base="https://theseus-os.github.io/blog/2022/04/02/wasmtime-progress-update.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#the-quest-port-continues&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-quest-port-continues&quot;&gt;&lt;/a&gt;The ~quest~ port continues!&lt;/h2&gt;
-&lt;p&gt;TODO: topics to cover: from Feb 1 to April 1&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Support backtrace, which required modifying Theseus&#x27;s unwinder and stack trace functionality to expose more details about what its doing and the register values on each stack frame&lt;/li&gt;
-&lt;li&gt;Support &lt;code&gt;std&lt;/code&gt;-like &lt;code&gt;path&lt;/code&gt;s in Theseus&#x27;s &lt;code&gt;no_std&lt;/code&gt; environment
-&lt;ul&gt;
-&lt;li&gt;Plus syntactic sugar to use a regular &lt;code&gt;Rust&lt;/code&gt; &lt;code&gt;String&lt;/code&gt; and &lt;code&gt;str&lt;/code&gt; as an &lt;code&gt;OsString&lt;/code&gt; and &lt;code&gt;OsStr&lt;/code&gt;, respectively&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Improved unwinding, now supports &lt;code&gt;resume_unwind&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Better error traits and error handling for &lt;code&gt;no_std&lt;/code&gt;, including adaptations of the ubiquitous &lt;code&gt;thiserror&lt;/code&gt; and &lt;code&gt;anyhow&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3&gt;&lt;a href&#x3D;&quot;#the-last-jedi-dependency&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-last-jedi-dependency&quot;&gt;&lt;/a&gt;The Last ~Jedi~ Dependency&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;Signal handling
-&lt;ul&gt;
-&lt;li&gt;Required because &lt;code&gt;wasmtime&lt;/code&gt; performs Just-In Time (JIT) compilation of WASM binaries into native code, so a failure or exception will translate into a native host exception, e.g., a SEGFAULT or the like.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2&gt;&lt;a href&#x3D;&quot;#miscellaneous-contributions&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;miscellaneous-contributions&quot;&gt;&lt;/a&gt;Miscellaneous Contributions&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Jacob&#x27;s rate monotonic scheduler for pseudo-realtime tasks
-&lt;ul&gt;
-&lt;li&gt;Introduce a &lt;code&gt;sleep&lt;/code&gt; crate that handles blocking a task for a given number of system ticks.&lt;/li&gt;
-&lt;li&gt;Supports the notion of &amp;quot;periodic&amp;quot; tasks that run a short workload, go to sleep, and then wake back up at the beginning of every X-tick period.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Updated to the latest Rust 1.61 nightly version.
-&lt;ul&gt;
-&lt;li&gt;Required to fix the ABI issues in LLVM, wherein the &lt;code&gt;&amp;quot;x86-interrupt&amp;quot;&lt;/code&gt; ABI for exception handlers didn&#x27;t properly match what the CPU pushes onto the stack before jumping to said handler.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Contributed a tiny PR back to the &lt;code&gt;x86_64&lt;/code&gt; crate
-&lt;ul&gt;
-&lt;li&gt;We had been using our own outdated fork of this library for a while, but I minimized Theseus&#x27;s dependencies on it so we can now rely on it for only a small subset of features. This made it easier to upgrade to the latest version.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;Ramla finished implementing packet tranmission for the Mellanox 100GiB NIC&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-
-        <author>
-            <name>Kevin Boos</name>
-        </author>
-    </entry>
     
     <entry>
         <title>Progress porting wasmtime-runtime to Theseus</title>
