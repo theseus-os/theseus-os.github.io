@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>November-December 2021 Update: We have WASM liftoff! | Theseus OS Blog</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="description" content="Theseus OS Blog">
+    
+
+
+
+<!-- styles -->
+<link rel="stylesheet" href="/styles/vendor.css"/>
+<link rel="stylesheet" href="/styles/fonts.css"/>
+<link rel="stylesheet" href="/styles/app.css"/>
+<link rel="stylesheet" href="/styles/highlight.css"/>
+
+<!-- FontAwesome font-awesome (for icons) -->
+<link rel="stylesheet" href="/FontAwesome/css/font-awesome.min.css"/>
+
+<!-- favicon -->
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.ico">
+<link rel="icon" type="image/svg+xml" href="/images/theseus_ship.svg">
+<link rel="manifest" href="/images/site.webmanifest">
+
+<meta name="msapplication-TileColor" content="#00aba9">
+<meta name="theme-color" content="#ffffff">
+
+ <!-- atom -->
+ <link type="application/atom+xml" rel="alternate" href="https://theseus-os.github.io/blog/feed.xml" title="Theseus OS Blog" />
+
+  </head>
+  <body>
+    <nav class="flex flex-row justify-center justify-end-l items-center flex-wrap ph2 pl3-ns pr4-ns">
+  <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
+    <a href="/">
+      <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
+      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+    </a>
+  </div>
+
+  <ul class="nav list w-100 w-auto-l flex flex-none flex-row flex-wrap justify-center justify-end-l items-center pv2 ph0 ph4-ns">
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/theseus-os/Theseus" target="_blank" rel="noopener">Theseus&nbsp;OS<i style="padding-left: 0.33em;" id="github-icon" class="fa fa-github" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/book/index.html">Book<i style="padding-left: 0.33em;" id="book-icon" class="fa fa-book" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/doc/___Theseus_Crates___/index.html">Docs<i style="padding-left: 0.33em;" id="docs-icon" class="fa fa-cubes" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/sponsors/kevinaboos">Sponsor&nbsp;Us<i style="padding-left: 0.33em;" id="sponsor-icon" class="fa fa-heart-o" aria-hidden="true"></i>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="mailto:theseus.systems@gmail.com?subject=Interested in Theseus OS!">Email<i style="padding-left: 0.33em;" id="email" class="fa fa-envelope-o" aria-hidden="true"></i></a>
+      </span>    
+    </li>
+  </ul>
+</nav>
+
+<section id="November-December 2021 Update: We have WASM liftoff!" class="white">
+  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+    <header>
+      <h2>November-December 2021 Update: We have WASM liftoff!</h2>
+      <div class="highlight mt2 mb3"></div>
+    </header>
+
+    <div class="publish-date-author">Dec. 31, 2021 &nbsp;&middot;&nbsp; by <a target="_blank" href="https://github.com/kevinaboos">Kevin Boos</a>
+    
+    </div>
+
+    <div class="post">
+      <h2><a href="#theseus-now-supports-wasm--wasi" aria-hidden="true" class="anchor" id="theseus-now-supports-wasm--wasi"></a>Theseus now supports WASM + WASI</h2>
+<p>Great news -- executing WASM modules atop Theseus is now working!</p>
+<p>As proposed in a <a href="2021-11-01-October-Update-WASM.md">previous post</a>, the initial implementation covers basic WASI system calls and uses the <code>wasmi</code> crate to execute WASM binaries using an intepreter.</p>
+<p>Big thanks to <a href="https://github.com/vikrammullick">Vikram Mullick</a> for leading this effort. Our initial work was also inspired by early work from <a href="https://github.com/tomaka/redshirt">redshirt</a>, a WASM-based proof-of-concept system that also used <code>wasmi</code>.</p>
+<blockquote>
+<p>Note: this feature is not yet merged into the <code>theseus_main</code> branch. It's coming soon!
+In the mean time, you can follow its progress in <a href="https://github.com/theseus-os/Theseus/pull/472">PR #472</a>.</p>
+</blockquote>
+<h3><a href="#demos-of-running-wasm-on-theseus" aria-hidden="true" class="anchor" id="demos-of-running-wasm-on-theseus"></a>Demos of running WASM on Theseus</h3>
+<p>We have a few demo applications to show basic WASM + WASI functionality.</p>
+<p>First, a classic text adventure game called <a href="https://en.wikipedia.org/wiki/Zork#Zork_and_Dungeon">Zork</a>. This demonstrates using stdio through WASI-defined APIs.
+<img src="/images/2021-posts/wzork.png" alt="zork" /></p>
+<p>Second, a simple version of <code>grep</code> version 2.0 compiled to WASM, which demonstrates using WASI's filesystem I/O interface.
+<img src="/images/2021-posts/wgrep.png" alt="grep" /></p>
+<p>Once WASM support is officially in the main branch, we will offer an easier command line interface for loading and executing WASM binaries.</p>
+<h2><a href="#progress-on-porting-wasmtime-to-theseus" aria-hidden="true" class="anchor" id="progress-on-porting-wasmtime-to-theseus"></a>Progress on Porting <code>wasmtime</code> to Theseus</h2>
+<p>While the interpreted WASM project is wrapping up, the port of <code>wasmtime</code> is just getting started.</p>
+<p>As described in <a href="https://docs.wasmtime.dev/contributing-architecture.html"><code>wasmtime</code>'s documentation</a>, the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
+The top-level crate is aptly named <code>wasmtime</code>, and it primarily exposes a safe API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them.</p>
+<h3><a href="#bottom-up-approach----off-to-a-strong-start" aria-hidden="true" class="anchor" id="bottom-up-approach----off-to-a-strong-start"></a>Bottom-up approach -- off to a strong start</h3>
+<p>We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
+A diagram of the key crates that we care about and need to port is below.
+<img src="/images/2021-ports/wasmtime-crate-structure.png" alt="diagram of wasmtime key crates" /></p>
+<p>As such, the top-level <code>wasmtime</code> crate will be the <em>last</em> one that we port to Theseus.
+So far, we have been able to quickly adapt the following bottom-most crates to <code>no_std</code> environments, as they are relatively standalone:</p>
+<ul>
+<li><code>wasmparser</code>: an external (non-wasmtime) tool for parsing WASM binaries</li>
+<li><code>wasmtime-types</code>: definitions for core WASM types and execution concepts</li>
+<li><code>wasmtime-environ</code>: support for abstract definitions of compiler environment and features, enabling easy use of the cranelift backend for JIT</li>
+<li><code>cranelift-entity</code>: core data structures used by the Cranelift code generator</li>
+</ul>
+<p>In addition, we had to modify the following crates that were dependencies of wasmtime in order to support <code>no_std</code> environments. We submitted PRs to each crate's upstream repository, some of which have already been accepted. Thanks to those authors/maintainers!</p>
+<ul>
+<li><code>object</code>: PR to <a href="https://github.com/gimli-rs/object/pull/400">allow <code>no_std</code> environments to <em>write</em>, not just read, object files</a></li>
+<li><code>more_asserts</code>: a trivial PR to <a href="https://github.com/thomcc/rust-more-asserts/pull/6">add <code>no_std</code> support</a></li>
+<li><code>crc32fast</code>: a tricky fix to <a href="https://github.com/srijs/rust-crc32fast/pull/22">compilation for targets that lack some SIMD hardware features</a></li>
+<li><code>indexmap</code>: PR to <a href="https://github.com/bluss/indexmap/pull/207">unify the API between <code>std</code> and <code>no_std</code> users</a> of <code>indexmap</code> data structures
+<ul>
+<li>Unfortunately, this one has been delayed due to <code>indexmap</code>'s non-standard usage of features and auto-<code>std</code> feature detection</li>
+</ul>
+</li>
+</ul>
+<h3><a href="#looking-forward-in-wasmtime" aria-hidden="true" class="anchor" id="looking-forward-in-wasmtime"></a>Looking forward in (wasm)time</h3>
+<p>The main challenge in porting <code>wasmtime</code> to Theseus is porting the <code>wasmtime-runtime</code> crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
+This crate is massive and will likely take months to complete, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.</p>
+<p>We'll start by tackling the main dependencies of <code>wasmtime-runtime</code>, most of which are based around legacy POSIX-style interfaces and traditional OS platform abstractions:</p>
+<ul>
+<li>Unix-like memory mapping and protection</li>
+<li>Signal/trap handling</li>
+<li>Thread-local storage</li>
+<li>Stack introspection and backtracing</li>
+<li>File and I/O abstractions</li>
+<li>Exception (panic) handling and unwinding resumption</li>
+</ul>
+<p>Look for updates in the next post!</p>
+<h2><a href="#miscellaneous-contributions" aria-hidden="true" class="anchor" id="miscellaneous-contributions"></a>Miscellaneous Contributions</h2>
+<ul>
+<li>Kevin wrote a <a href="https://www.theseus-os.com/Theseus/book/subsystems/task.html">new book chapter</a> about how Theseus's task management subsystem works.</li>
+<li>Fixed a <a href="https://github.com/theseus-os/Theseus/issues/451">rare bug</a> in the <a href="https://github.com/theseus-os/Theseus/pull/456">frame allocator</a>, originally identified by Ramla. Thanks to her for catching that!</li>
+<li>Fixed a classic off-by-one <a href="https://github.com/theseus-os/Theseus/issues/473">bug</a> that caused buffered <a href="https://github.com/theseus-os/Theseus/commit/983532ac6dc6d7ccd69faf5c62f38e3b9760c4d6">stdio reads to drop one character</a> when the buffer was full. Thanks to Vikram for catching this!</li>
+</ul>
+
+    </div>
+  </div>
+</section>
+
+    <footer>
+  <div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+    <div class="row">
+      <div class="four columns mt3 mt0-l" id="get-help">
+        <h4>More info</h4>
+        <ul>
+          <li><a href="https://github.com/theseus-os/Theseus/">Theseus OS on GitHub</a></li>
+          <li><a href="https://github.com/theseus-os/">Theseus OS Organization</a></li>
+          <li><a href="mailto:theseus.systems@gmail.com">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Terms and policies</h4>
+        <ul>
+          <li><a href="https://www.rust-lang.org/policies/code-of-conduct">Rust's Code of Conduct</a></li>
+          <li>Licenses:  <a href="https://opensource.org/licenses/MIT">MIT</a>  <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></li>
+          <li><a href="https://github.com/rust-lang/blog.rust-lang.org">Format based on Rust's Blog</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Social</h4>
+        <div class="flex flex-row flex-wrap">
+          <a href="https://twitter.com/rustlang" target="_blank" rel="noopener" alt="twitter link"><img src="/images/twitter.svg" alt="twitter logo" title="Twitter"/></a>
+          <a href="https://www.youtube.com/c/KevinBoosPhD" target="_blank" rel="noopener" alt="youtube link"><img style="padding-top: 6px; padding-bottom:6px" src="/images/youtube.svg" alt="youtube logo" title="YouTube"/></a>
+          <a href="https://discord.gg/rust-lang" target="_blank" rel="noopener" alt="discord link"><img src="/images/discord.svg" alt="discord logo" title="Discord"/></a>
+          <a href="https://github.com/rust-lang" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
+        </div>
+        <h4 class="mt4 mb3">RSS</h4>
+        <ul>
+          <li><a href="/feed.xml">Theseus Blog RSS Feed</a></li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="attribution">
+      Maintained by the Theseus OS organization. See a typo?
+      <a href="https://github.com/theseus-os/blog" target="_blank" rel="noopener">File an issue here</a>!
+    </div>
+  </div>
+</footer>
+
+<!-- scripts -->
+<script src="/scripts/highlight.js"></script>
+
+  </body>
+</html>

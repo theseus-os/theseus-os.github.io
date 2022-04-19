@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>2021: A Year in Review | Theseus OS Blog</title>
+    <title>WASM has landed! | Theseus OS Blog</title>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta name="description" content="Theseus OS Blog">
     
@@ -70,67 +70,36 @@
   </ul>
 </nav>
 
-<section id="2021: A Year in Review" class="white">
+<section id="WASM has landed!" class="white">
   <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
     <header>
-      <h2>2021: A Year in Review</h2>
+      <h2>WASM has landed!</h2>
       <div class="highlight mt2 mb3"></div>
     </header>
 
-    <div class="publish-date-author">Jan. 13, 2022 &nbsp;&middot;&nbsp; by <a target="_blank" href="https://github.com/kevinaboos">Kevin Boos</a>
+    <div class="publish-date-author">Jan. 25, 2022 &nbsp;&middot;&nbsp; by <a target="_blank" href="https://github.com/kevinaboos">Kevin Boos</a>
     
     </div>
 
     <div class="post">
-      <h2><a href="#theseuss-first-full-year" aria-hidden="true" class="anchor" id="theseuss-first-full-year"></a>Theseus's First Full Year</h2>
-<p>Although 2021 not the first year of Theseus development, it <em>was</em> the first whole year in which:</p>
-<ol>
-<li>Theseus was fully open-sourced and publically known to the community.</li>
-<li>Theseus received interest from academic and industry collaborators.</li>
-<li>Theseus received funding for open-source development from industry (yay!).</li>
-<li>Our focus shifted from prototyping research concepts to feature completeness, stabilization, and legacy compatibility.</li>
-</ol>
-<p>Thanks to all the folks who contributed, advised, and interacted with myself and the rest of the Theseus team this year!</p>
-<p>We had an explosion of interest on GitHub:
-<img src="/images/2022-posts/theseus-github-sshot.png" alt="theseus-github-screenshot" /></p>
-<p>And official funding from Futurewei to continue Theseus development!
-<img src="/images/2022-posts/futurewei_plus_theseus.png" alt="Futurewei plus Theseus collab" /></p>
-<blockquote>
-<p>We look forward to another productive year!</p>
-<p>Time to get Theseus onto some real devices! <sup>hint hint</sup></p>
-</blockquote>
-<h4><a href="#recap-major-new-developments" aria-hidden="true" class="anchor" id="recap-major-new-developments"></a>Recap: major new developments</h4>
-<ul>
-<li>Ability to build out-of-tree crates against Theseus using <code>theseus_cargo</code>
-<ul>
-<li>A novel extension of cargo to support building against prebuilt dependencies</li>
-</ul>
-</li>
-<li>Basic WASM execution (using <code>wasmi</code> interpreter) with core WASI support
-<ul>
-<li>Coming soon!</li>
-</ul>
-</li>
-<li>Continuing efforts to support headless, no-graphics operation</li>
-<li>General legacy compatibility improvements, including a fuller libc implementation</li>
-<li>Generic, dynamic, and arbitrary thread-local storage (TLS), plus a Rust-like <code>thread_local!()</code> macro</li>
-<li>Tons of documentation, plus auto-published source docs and book docs!</li>
-<li>A full redesign of ergonomic and composable traits for device I/O, plus FAT FS support</li>
-<li>Performance and ergonomics improvements to the page and frame allocators</li>
-<li>Deferred interrupt handling tasks for better device driver performance and system interactivity</li>
-<li>and many more!</li>
-</ul>
-<h3><a href="#thanks-to-2021s-contributors" aria-hidden="true" class="anchor" id="thanks-to-2021s-contributors"></a>Thanks to 2021's Contributors!</h3>
-<p>Beyond our usual contributors, we had several newcomers from both Yale University and the open-source community at large who generously devoted their time to make some excellent improvements to Theseus.
-Our sincere thanks to:</p>
-<ul>
-<li>Futurewei Technologies, especially <a href="https://www.linkedin.com/in/sid-askary-21a962">Sid Askary</a> and <a href="https://www.linkedin.com/in/yong-he-1334902">Yong He</a>, for generously offering technical advice and funding for Theseus development.</li>
-<li><a href="https://github.com/apogeeoak">@apogeeoak</a>, who improved documentation quality and implemented GitHub workflows to autogenerate docs.</li>
-<li><a href="https://github.com/vikrammullick">Vikram Mullick</a>, who began and nearly finished support for running WASM+WASI binaries atop Theseus.</li>
-<li><a href="https://github.com/jacob-earle">Jacob Earle</a>, who began support for logging output on ARM microcontrollers and a pseudo-real time scheduling algorithm for Theseus.</li>
-<li><a href="https://github.com/joshtriplett">Josh Triplett</a>, who served as a valuable font of advice and sounding board for some of my wild Theseus ideas.</li>
-<li><a href="https://github.com/phil-opp">Philipp Oppermann</a>, whose project <a href="https://os.phil-opp.com/">Blog OS</a> helped kickstart Theseus development a few years ago.</li>
-</ul>
+      <h2><a href="#running-wasm--wasi-modules-in-a-safe-os-kernel" aria-hidden="true" class="anchor" id="running-wasm--wasi-modules-in-a-safe-os-kernel"></a>Running WASM + WASI modules in a safe OS kernel</h2>
+<p>🚀🚀 WASM has now landed in Theseus! 🚀🚀</p>
+<p>With <a href="https://github.com/theseus-os/Theseus/commit/f4aa715f0fc706a0e3b0f3f21057338c0b295ffb">PR #472</a> being merged in, Theseus's main branch allows you to execute WASM modules (as precompiled WASM binaries) that use both the core WASM specification and basic WASI extensions.</p>
+<p>See our <a href="2021-12-31-November-December-Update-WASM.md">previous blog post</a> for more about this effort.</p>
+<h3><a href="#how-to-use-and-run-wasm-on-theseus" aria-hidden="true" class="anchor" id="how-to-use-and-run-wasm-on-theseus"></a>How to use and run WASM on Theseus</h3>
+<p>Theseus doesn't yet support running an actual compiler, so you first need to download a pre-compiled WASM binary on the Theseus command line or package one up into the OS image itself during build time. We describe the latter approach below.</p>
+<p>Theseus's build tooling now supports including arbitrary &quot;extra files&quot; in the generated OS <code>.iso</code> image; <a href="https://github.com/theseus-os/Theseus/tree/theseus_main/extra_files">click here to read more</a> about that feature.
+All you have to do is put whatever files you want included into the <code>extra_files/</code> directory in the source code repository.
+Presto-magic-change-o, these extra files will be automatically loaded into Theseus's in-memory filesystem upon boot, in the <code>/extra_files</code> directory.</p>
+<p>Once you have a WASM binary, running it is easy with the <code>wasm</code> command:</p>
+<pre><code class="language-sh">wasm /path/to/wasm/binary [args]
+</code></pre>
+<p>For example, try out the <code>exorbitant</code> interactive calculator like so:</p>
+<pre><code class="language-sh">wasm /extra_files/wasm/exorbitant.wasm
+</code></pre>
+<p><img src="/images/2022-posts/exorbitant-wasm.png" alt="exorbitant demo" /></p>
+<hr />
+<p>Our work on <code>wasmtime</code> atop Theseus is still ongoing. Please check back for more updates soon!</p>
 
     </div>
   </div>

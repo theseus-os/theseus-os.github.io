@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Progress porting &#x60;wasmtime-runtime&#x60; to Theseus | Theseus OS Blog</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="description" content="Theseus OS Blog">
+    
+
+
+
+<!-- styles -->
+<link rel="stylesheet" href="/styles/vendor.css"/>
+<link rel="stylesheet" href="/styles/fonts.css"/>
+<link rel="stylesheet" href="/styles/app.css"/>
+<link rel="stylesheet" href="/styles/highlight.css"/>
+
+<!-- FontAwesome font-awesome (for icons) -->
+<link rel="stylesheet" href="/FontAwesome/css/font-awesome.min.css"/>
+
+<!-- favicon -->
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.ico">
+<link rel="icon" type="image/svg+xml" href="/images/theseus_ship.svg">
+<link rel="manifest" href="/images/site.webmanifest">
+
+<meta name="msapplication-TileColor" content="#00aba9">
+<meta name="theme-color" content="#ffffff">
+
+ <!-- atom -->
+ <link type="application/atom+xml" rel="alternate" href="https://theseus-os.github.io/blog/feed.xml" title="Theseus OS Blog" />
+
+  </head>
+  <body>
+    <nav class="flex flex-row justify-center justify-end-l items-center flex-wrap ph2 pl3-ns pr4-ns">
+  <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
+    <a href="/">
+      <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
+      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+    </a>
+  </div>
+
+  <ul class="nav list w-100 w-auto-l flex flex-none flex-row flex-wrap justify-center justify-end-l items-center pv2 ph0 ph4-ns">
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/theseus-os/Theseus" target="_blank" rel="noopener">Theseus&nbsp;OS<i style="padding-left: 0.33em;" id="github-icon" class="fa fa-github" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/book/index.html">Book<i style="padding-left: 0.33em;" id="book-icon" class="fa fa-book" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/doc/___Theseus_Crates___/index.html">Docs<i style="padding-left: 0.33em;" id="docs-icon" class="fa fa-cubes" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/sponsors/kevinaboos">Sponsor&nbsp;Us<i style="padding-left: 0.33em;" id="sponsor-icon" class="fa fa-heart-o" aria-hidden="true"></i>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="mailto:theseus.systems@gmail.com?subject=Interested in Theseus OS!">Email<i style="padding-left: 0.33em;" id="email" class="fa fa-envelope-o" aria-hidden="true"></i></a>
+      </span>    
+    </li>
+  </ul>
+</nav>
+
+<section id="Progress porting &#x60;wasmtime-runtime&#x60; to Theseus" class="white">
+  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+    <header>
+      <h2>Progress porting &#x60;wasmtime-runtime&#x60; to Theseus</h2>
+      <div class="highlight mt2 mb3"></div>
+    </header>
+
+    <div class="publish-date-author">Feb. 3, 2022 &nbsp;&middot;&nbsp; by <a target="_blank" href="https://github.com/kevinaboos">Kevin Boos</a>
+    
+    </div>
+
+    <div class="post">
+      <h2><a href="#porting-wasmtime-runtime-the-key-wasmtime-crate" aria-hidden="true" class="anchor" id="porting-wasmtime-runtime-the-key-wasmtime-crate"></a>Porting <code>wasmtime-runtime</code>, the key <code>wasmtime</code> crate</h2>
+<p>A <a href="2021-12-31-November-December-Update-WASM.md">previous post from late 2021</a> chronicled our ongoing journey to port <code>wasmtime</code> to Theseus.
+While our bottom-up approach got off to a strong start, we quickly encountered our first major challenge when examining the <code>wasmtime-runtime</code> crate, as it contains many dependencies on platform-specific and legacy system interfaces:</p>
+<ul>
+<li>Unix-like memory mapping and protection</li>
+<li>Signal/trap handling</li>
+<li>Thread-local storage</li>
+<li>Stack introspection and backtracing</li>
+<li>File and I/O abstractions</li>
+<li>Exception (panic) handling and unwinding resumption</li>
+</ul>
+<p>This post describes our progress over a few weeks of working to add these features to Theseus in order to support <code>wasmtime-runtime</code>'s many complex dependencies.</p>
+<h3><a href="#porting--reorganizing-third-party-libraries" aria-hidden="true" class="anchor" id="porting--reorganizing-third-party-libraries"></a>Porting &amp; reorganizing third-party libraries</h3>
+<p>We first re-organized Theseus's repository to include two folders for third-party crates:</p>
+<ul>
+<li><code>libs/</code>: contains standalone crates that don't depend on Theseus, but can be used by Theseus and others.</li>
+<li><code>ports/</code>: contains crates that have been ported to depend directly on Theseus-specific crates, e.g., those in <code>kernel/</code> and are thus not standalone.</li>
+</ul>
+<p>The main features ported over the past couple of months (early winter 2021-2022) are shown in the table below:</p>
+<table>
+<thead>
+<tr>
+<th>Crate / Feature</th>
+<th>Summary</th>
+<th>Reason Needed for <code>wasmtime-runtime</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>libc</code></td>
+<td>Rust wrapper around the actual platform-specific <code>libc</code> implementation</td>
+<td>Used to establish memory mappings and register signal handlers</td>
+</tr>
+<tr>
+<td><code>region</code></td>
+<td>Cross-platform APIs for virtual memory functions</td>
+<td></td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>Thread-Local Storage areas</td>
+<td>Used for <code>thread_local!()</code> macro, which is needed to handle traps and stack unwinding upon exceptions that occur while executing native code that was JIT-compiled from a WASM binary</td>
+</tr>
+<tr>
+<td><code>object</code></td>
+<td>Helper crate for reading/writing object files, e.g., ELF</td>
+<td>Used to read object files generated by <code>cranelift</code>'s backend and to manage unwind info</td>
+</tr>
+</tbody>
+</table>
+<h4><a href="#porting-libc-to-theseus" aria-hidden="true" class="anchor" id="porting-libc-to-theseus"></a>Porting <code>libc</code> to Theseus</h4>
+<p>Support for a minimal subset of <code>libc</code> functionality has been an ongoing but low-priority effort, mostly for two reasons:</p>
+<ol>
+<li>Running C code directly on Theseus is inherently unsafe, as C is not a safe language and can thus violate Theseus's language safety-based isolation and resource usage guarantees.</li>
+<li>No crates that THeseus depends on have needed an underlying <code>libc</code>, thus Theseus as a platform did not need to offer one... until now.</li>
+</ol>
+<p>Theseus's libc implementation is called <code>tlibc</code>. which is described in <a href="https://www.theseus-os.com/Theseus/book/c/programs.html">this book chapter</a>.
+So far it has been loosely based on the Redox project's <code>relibc</code>.</p>
+<p>Our efforts of late were focused on supporting <code>mmap</code> for POSIX-style memory mappings, which Theseus has traditionally eschewed because they are unsafe and poorly-designed from a state management perspective<sup class="footnote-ref"><a href="#fn1" id="fnref1">1</a></sup>.
+In the future, we also may support POSIX-style signal handlers, but for now we have chosen to re-implement <code>wasmtime</code>'s signal handling directly in safe Rust atop Theseus rather than going through an unsafe <code>libc</code> FFI boundary for no good reason.</p>
+<p>The bulk of the <code>mmap</code> implemenation for <code>tlibc</code> was added in <a href="https://github.com/theseus-os/Theseus/commit/fffda853e71b5a0d7b20b850297962227e592850">commit fffda85</a>.
+The key aspects of this are:</p>
+<ul>
+<li><code>tlibc</code> exposes a POSIX-style <code>mmap()</code> function that calls Theseus APIs to instantiate new <code>MappedPages</code> objects, and then saves them in a private list so that they aren't dropped until the corresponding <code>munmap()</code> call is invoked.
+<ul>
+<li>This is required because Theseus's abstraction of a virtual memory mapping, <code>MappedPages</code>, is auto-unmapped upon <code>drop</code> to guarantee safety.</li>
+</ul>
+</li>
+<li>Currently, <code>mlock</code> and <code>munlock</code> are dummy functions because Theseus doesn't perform any swapping or paging to disk.</li>
+<li>Memory protection (<code>mprotect</code>) is offered, but is currently limited because Theseus forces all current memory mappings to be marked as &quot;present&quot; in the page table.
+<ul>
+<li>Thus, stripping read permissions from a mapping technically works, but it violates the guarantees of the <code>MappedPages</code> type, i.e., the mapping is present and valid for the entire lifetime of a <code>MappedPages</code> object.</li>
+</ul>
+</li>
+</ul>
+<p>While we were at it, we went even further with additional improvements to <code>theseus_cargo</code>, <code>libc</code>, and <code>tlibc</code> to <a href="https://github.com/theseus-os/Theseus/commit/870fb246af68d02be7981374687b80c1429f48eb">facilitate integration of Rust and C code</a> atop Theseus.</p>
+<ul>
+<li>Each time we implement a new feature in <code>tlibc</code>, we must also update
+<a href="https://github.com/theseus-os/Theseus/commit/d0fbcd0e11d56183bb306d43430dc65d4d640869">Here's an example of that for <code>mmap</code></a>, with some testing functions included.</li>
+<li><code>theseus_cargo</code> now supports building out-of-tree components <a href="https://github.com/theseus-os/Theseus/commit/a685e062848d3b1522b2b962c21f51facb25726e">that depend on both Rust and C code</a>, e.g., native libraries.
+<ul>
+<li>It also now supports building <code>rlib</code> and <code>staticlib</code> crate types.</li>
+</ul>
+</li>
+<li>We added <a href="https://github.com/theseus-os/Theseus/commit/4b83e95cf128a0ecd67a6c5de39f18f8bb317048">basic <code>stdio</code> features to <code>tlibc</code></a>, e.g., for <code>printf</code>, which is useful for testing purposes.</li>
+</ul>
+<blockquote>
+<p>In summary, we fixed all the issues with <code>tlibc</code>, <code>libc</code>, and <code>theseus_cargo</code>.</p>
+<p>Now, Rust and C code (both in-tree and out-of-tree components) can all be compiled and loaded/linked together in Theseus.</p>
+</blockquote>
+<h4><a href="#porting-region-to-theseus" aria-hidden="true" class="anchor" id="porting-region-to-theseus"></a>Porting <code>region</code> to Theseus</h4>
+<p>With <code>tlibc</code> now supporting basic <code>libc</code> memory mapping functions, porting the <code>region</code> crate was fairly straightforward.</p>
+<p>However, importantly, we chose to <em>not</em> force <code>region</code> on Theseus to depend on <code>tlibc</code>, mainly because it would introduce another layer of unsafety.
+The <a href="https://github.com/theseus-os/region-rs/commit/b4de9a22b5c3c8a1e2b9f2834fe33df27472891e#diff-761c91258f20f42f7145ee39c2cbac444849c5a5285f5d9695a3aeea4d27c6d5">primary implementation of <code>alloc</code> and <code>free</code> are here</a>, which are similar to the <code>mmap()</code> implemenation in <code>tlibc</code>.
+We also must express the <a href="https://docs.rs/region/3.0.0/region/struct.Protection.html"><code>region::Protection</code></a> type in terms of Theseus's page table <code>EntryFlags</code>, which was generally straightforward.</p>
+<p>The one tricky part of <code>region</code> that we disliked is <a href="https://docs.rs/region/3.0.0/region/struct.QueryIter.html"><code>QueryIter</code></a>, which allows the caller to query <em>all</em> virtual memory areas across the entire current virtual address space to find ones that span or overlap with a certain range of addresses.<br />
+This is problematic for a few reasons:</p>
+<ul>
+<li>Theseus's state management philosophy dictates that it does not maintain a centralized list of all memory mappings, so there's nothing to iterate over by default.</li>
+<li>Theseus provides a very safe and clear API for interacting with memory mappings, which <a href="https://docs.rs/region/3.0.0/region/fn.query_range.html"><code>region::query_range()</code></a> completely ignores because it assumes a POSIX-style virtual memory API.</li>
+<li>Theseus strives to prevent <a href="https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use">TOCTTOU attacks</a> by avoiding the concept of a <a href="https://en.wikipedia.org/wiki/Handle_(computing)">handles that point to a resource indirectly</a>. By design (and by necessity atop conventional OSes), <code>QueryIter</code> separates the &quot;time of check&quot; from the &quot;time of use&quot;, leading to potentially confusing behavior and errors in which a memory region returned from a query no longer exists by the time one attempts to use it.</li>
+</ul>
+<p>In the end, our solution was to allow <code>QueryIter</code> to expose and return <strong>only references to the memory areas already created by the <code>region</code> crate itself</strong>. This strives to mitigate safety issues that could arise by exposing <em>all</em> memory regions maintained by Theseus to higher-level Rust code that may use them unsafely through the <code>region</code> APIs.
+Hopefully this feature restriction doesn't pose a problem in the future.</p>
+<h3><a href="#supporting-thread-local-storage-on-theseus" aria-hidden="true" class="anchor" id="supporting-thread-local-storage-on-theseus"></a>Supporting Thread-Local Storage on Theseus</h3>
+<p><a href="https://en.wikipedia.org/wiki/Thread-local_storage">Thread-Local Storage (TLS)</a> allows one to declare a variable that will be instantiated on a per-thread basis, with each thread having its own local copy that other threads cannot access.
+This is useful for many reasons, e.g., programming conveniencce, performant access to thread-specific data without locking, etc.
+Our motivation for finally supporting it in its ultimate flexible form -- the ELF standard TLS areas -- stemmed from <code>wasmtime-runtime</code>, which uses it in myriad ways.</p>
+<blockquote>
+<p>Note: previously, Theseus offered a cheap imitation of TLS using the GS register to store limited, targeted data about each task, but it wasn't usable by any applications, libraries, or even other non-<code>task</code> kernel crates.</p>
+</blockquote>
+<p>We implemented TLS support <a href="https://github.com/theseus-os/Theseus/commit/3e6c50a0a45560057c6a35db4ce220760e362962">across several commits</a>.
+This was a suprisingly complex and tricky implementation that required a lot of trial-and-error experimentation to determine how to correctly layout each TLS object in the per-task TLS area.</p>
+<p>Another complicating factor is that Theseus loads and links all crates at runtime, which means that our implementation <a href="https://github.com/theseus-os/Theseus/commit/fd1f11d99f1b4252abb35fffe7ae45f9f7ca616b">must support both statically-linked TLS areas from the base kernel image as well as newcomers found in dynamically-loaded crates</a>.
+There are a lot of tradeoffs herein as it relates to reserving and allocating offset ranges in the TLS space for TLS data sections, tracking TLS data sections per namespace, per crate, etc -- but these are best saved for a separate post about TLS.</p>
+<p>We went a step further by implementing <a href="https://github.com/theseus-os/Theseus/commit/dd62aff423e1deceed503e3341827ba1e04dce79">Rust's <code>thread_local!()</code> macro</a> for any Theseus crate, which offers lazy dynamic initialization and cleanup of TLS areas.
+This overcomes the limitations of standard ELF TLS sections, which behave like <code>static</code> globals in Rust: they are <code>const</code>-initialized and never dropped.</p>
+<h3><a href="#porting-the-object-crate-to-theseus" aria-hidden="true" class="anchor" id="porting-the-object-crate-to-theseus"></a>Porting the <code>object</code> crate to Theseus</h3>
+<p>The <code>object</code> crate is standalone and doesn't need to be ported to Theseus specifically, thus we can simply port it to <code>no_std</code> and place it in Theseus's <code>libs/</code> directory.
+The only real difficulty here is that while <code>object</code> <em>does</em> support <code>no_std</code>,  no previous users of <code>object</code> needed to <em>write</em> to an object file in a <code>no_std</code> environment.
+Thinking about it, we do agree that's kind of weird, but Theseus is just like that sometimes. 😊</p>
+<p>Once we convinced the maintainers of <code>object</code> that this feature was necessary, the changes required to do so weren't very involved.
+It boiled down to a rearrangement of <code>object</code>'s Cargo features and configuration blocks: check out the <a href="https://github.com/gimli-rs/object/pull/400">PR we submitted (that was accepted)</a> for more details.</p>
+<h2><a href="#miscellaneous-improvements" aria-hidden="true" class="anchor" id="miscellaneous-improvements"></a>Miscellaneous Improvements</h2>
+<ul>
+<li>We <a href="https://github.com/theseus-os/Theseus/commit/05f1213a562639be74aa7ceaeef301a23e86e97a">improved the page allocator</a> to allow it to lazily merge contiguous freed chunks of pages.
+<ul>
+<li>This happens lazily after an allocation request first fails; it is possible to also do it proactively in <code>AllocatedPages::drop()</code>, but that makes deallocation more expensive.</li>
+<li>Needed for loading C object files or static libraries with entry points at a fixed address, e.g., the default entry point of <code>0x400000</code>.</li>
+<li>Future work: support building and loading position-independent executables (PIE, and PIC). This is required to simultaneously load multiple C executables at the same fixed address, because Theseus only offers a single virtual address space.</li>
+</ul>
+</li>
+</ul>
+<section class="footnotes">
+<ol>
+<li id="fn1">
+<p>See our <a href="https://www.theseus-os.com/Theseus/book/misc/papers_presentations.html">OSDI 2020 paper</a> for an in-depth discussion of this. <a href="#fnref1" class="footnote-backref">↩</a></p>
+</li>
+</ol>
+</section>
+
+    </div>
+  </div>
+</section>
+
+    <footer>
+  <div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+    <div class="row">
+      <div class="four columns mt3 mt0-l" id="get-help">
+        <h4>More info</h4>
+        <ul>
+          <li><a href="https://github.com/theseus-os/Theseus/">Theseus OS on GitHub</a></li>
+          <li><a href="https://github.com/theseus-os/">Theseus OS Organization</a></li>
+          <li><a href="mailto:theseus.systems@gmail.com">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Terms and policies</h4>
+        <ul>
+          <li><a href="https://www.rust-lang.org/policies/code-of-conduct">Rust's Code of Conduct</a></li>
+          <li>Licenses:  <a href="https://opensource.org/licenses/MIT">MIT</a>  <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></li>
+          <li><a href="https://github.com/rust-lang/blog.rust-lang.org">Format based on Rust's Blog</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Social</h4>
+        <div class="flex flex-row flex-wrap">
+          <a href="https://twitter.com/rustlang" target="_blank" rel="noopener" alt="twitter link"><img src="/images/twitter.svg" alt="twitter logo" title="Twitter"/></a>
+          <a href="https://www.youtube.com/c/KevinBoosPhD" target="_blank" rel="noopener" alt="youtube link"><img style="padding-top: 6px; padding-bottom:6px" src="/images/youtube.svg" alt="youtube logo" title="YouTube"/></a>
+          <a href="https://discord.gg/rust-lang" target="_blank" rel="noopener" alt="discord link"><img src="/images/discord.svg" alt="discord logo" title="Discord"/></a>
+          <a href="https://github.com/rust-lang" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
+        </div>
+        <h4 class="mt4 mb3">RSS</h4>
+        <ul>
+          <li><a href="/feed.xml">Theseus Blog RSS Feed</a></li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="attribution">
+      Maintained by the Theseus OS organization. See a typo?
+      <a href="https://github.com/theseus-os/blog" target="_blank" rel="noopener">File an issue here</a>!
+    </div>
+  </div>
+</footer>
+
+<!-- scripts -->
+<script src="/scripts/highlight.js"></script>
+
+  </body>
+</html>
