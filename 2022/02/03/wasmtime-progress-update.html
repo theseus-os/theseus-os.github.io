@@ -118,7 +118,7 @@ While our bottom-up approach got off to a strong start, we quickly encountered o
 <tr>
 <td><code>region</code></td>
 <td>Cross-platform APIs for virtual memory functions</td>
-<td></td>
+<td>Used to allocate large chunks of memory and remap/protect memory regions as exec/read/write as needed</td>
 </tr>
 <tr>
 <td>TLS</td>
@@ -136,7 +136,7 @@ While our bottom-up approach got off to a strong start, we quickly encountered o
 <p>Support for a minimal subset of <code>libc</code> functionality has been an ongoing but low-priority effort, mostly for two reasons:</p>
 <ol>
 <li>Running C code directly on Theseus is inherently unsafe, as C is not a safe language and can thus violate Theseus's language safety-based isolation and resource usage guarantees.</li>
-<li>No crates that THeseus depends on have needed an underlying <code>libc</code>, thus Theseus as a platform did not need to offer one... until now.</li>
+<li>No crates that Theseus depends on have needed an underlying <code>libc</code>, thus Theseus as a platform did not need to offer one... until now.</li>
 </ol>
 <p>Theseus's libc implementation is called <code>tlibc</code>. which is described in <a href="https://www.theseus-os.com/Theseus/book/c/programs.html">this book chapter</a>.
 So far it has been loosely based on the Redox project's <code>relibc</code>.</p>

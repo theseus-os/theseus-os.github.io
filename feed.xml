@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-04-19T07:19:36+00:00</updated>
+    <updated>2022-04-21T00:38:22+00:00</updated>
 
     
     <entry>
@@ -55,7 +55,7 @@ While our bottom-up approach got off to a strong start, we quickly encountered o
 &lt;tr&gt;
 &lt;td&gt;&lt;code&gt;region&lt;/code&gt;&lt;/td&gt;
 &lt;td&gt;Cross-platform APIs for virtual memory functions&lt;/td&gt;
-&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;Used to allocate large chunks of memory and remap/protect memory regions as exec/read/write as needed&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;TLS&lt;/td&gt;
@@ -73,7 +73,7 @@ While our bottom-up approach got off to a strong start, we quickly encountered o
 &lt;p&gt;Support for a minimal subset of &lt;code&gt;libc&lt;/code&gt; functionality has been an ongoing but low-priority effort, mostly for two reasons:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Running C code directly on Theseus is inherently unsafe, as C is not a safe language and can thus violate Theseus&#x27;s language safety-based isolation and resource usage guarantees.&lt;/li&gt;
-&lt;li&gt;No crates that THeseus depends on have needed an underlying &lt;code&gt;libc&lt;/code&gt;, thus Theseus as a platform did not need to offer one... until now.&lt;/li&gt;
+&lt;li&gt;No crates that Theseus depends on have needed an underlying &lt;code&gt;libc&lt;/code&gt;, thus Theseus as a platform did not need to offer one... until now.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Theseus&#x27;s libc implementation is called &lt;code&gt;tlibc&lt;/code&gt;. which is described in &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/book/c/programs.html&quot;&gt;this book chapter&lt;/a&gt;.
 So far it has been loosely based on the Redox project&#x27;s &lt;code&gt;relibc&lt;/code&gt;.&lt;/p&gt;
