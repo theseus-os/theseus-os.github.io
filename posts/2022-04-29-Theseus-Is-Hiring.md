@@ -24,7 +24,7 @@ As an OS developer, you will independently lead a major development project with
 
 To lend some context, Theseus OS is a novel operating system written from scratch entirely in Rust,
 with the objective of realizing next-generation safety and efficiency guarantees for workloads in a variety of execution environments. 
-Theseus's goals span the gamut: everything from supporting cutting-edge exploratory research topics to more practical concerns of achieving legacy compatibility and usability.
+Theseus's goals span the gamut from supporting cutting-edge exploratory research topics to more practical concerns of achieving legacy compatibility and usability.
 
 Lately, our focus is on deep support for WebAssembly (WASM) interfaces and runtimes, as well as porting Theseus to additional architectures (e.g., ARM).
 As such, your development project ([more ideas below](#project-ideas)) will likely be related to one of those areas.
@@ -58,7 +58,7 @@ Terms can be extended if the candidate performs well.
 
 ### Eligibility
 
-Theseus is a U.S.-based organization but *does not* require citizenship, permanent residency, or work visa/authorization.
+Theseus is a U.S.-based organization but does *not* require citizenship, permanent residency, or work visa/authorization.
 
 Anyone from any country is welcome to apply, including but not limited to students, professionals, open-source developers, hobbyists, and more.
 If in the U.S., you will be hired as a standard 1099 independent contractor, as with typical freelance work.
