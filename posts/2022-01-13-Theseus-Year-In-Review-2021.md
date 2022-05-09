@@ -19,7 +19,7 @@ We had an explosion of interest on GitHub:
 ![theseus-github-screenshot](/images/2022-posts/theseus-github-sshot.png)
 
 And official funding from Futurewei to continue Theseus development!
-![Futurewei plus Theseus collab](/images/2022-posts/futurewei_plus_theseus.png)
+![Futurewei plus Theseus collab](/images/2022-posts/theseus_plus_futurewei.svg)
 
 
 

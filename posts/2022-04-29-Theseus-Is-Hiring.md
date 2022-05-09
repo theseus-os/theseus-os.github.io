@@ -13,8 +13,10 @@ Thanks to the generosity of Futurewei's Rust initiative, Theseus is able to hire
 
 **To apply, send your resume or C.V. to [theseus.systems@gmail.com](mailto:theseus.systems@gmail.com).**
 
+
 Check out the below sections for more info.
 
+![Theseus plus Futurewei](/images/2022-posts/theseus_plus_futurewei.svg)
 
 ### Job Title: Operating Systems Developer
 
