@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-05-09T19:43:46+00:00</updated>
+    <updated>2022-05-09T21:17:12+00:00</updated>
 
     
     <entry>
@@ -24,6 +24,7 @@
 Thanks to the generosity of Futurewei&#x27;s Rust initiative, Theseus is able to hire developers for the first time!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;To apply, send your resume or C.V. to &lt;a href&#x3D;&quot;mailto:theseus.systems@gmail.com&quot;&gt;theseus.systems@gmail.com&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Check out the below sections for more info.&lt;/p&gt;
+&lt;p&gt;&lt;img src&#x3D;&quot;/images/2022-posts/theseus_plus_futurewei.svg&quot; alt&#x3D;&quot;Theseus plus Futurewei&quot; /&gt;&lt;/p&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#job-title-operating-systems-developer&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;job-title-operating-systems-developer&quot;&gt;&lt;/a&gt;Job Title: Operating Systems Developer&lt;/h3&gt;
 &lt;p&gt;As an OS developer, you will independently lead a major development project within Theseus OS.&lt;/p&gt;
 &lt;p&gt;To lend some context, Theseus OS is a novel operating system written from scratch entirely in Rust,
@@ -377,7 +378,7 @@ Presto-magic-change-o, these extra files will be automatically loaded into These
 &lt;p&gt;We had an explosion of interest on GitHub:
 &lt;img src&#x3D;&quot;/images/2022-posts/theseus-github-sshot.png&quot; alt&#x3D;&quot;theseus-github-screenshot&quot; /&gt;&lt;/p&gt;
 &lt;p&gt;And official funding from Futurewei to continue Theseus development!
-&lt;img src&#x3D;&quot;/images/2022-posts/futurewei_plus_theseus.png&quot; alt&#x3D;&quot;Futurewei plus Theseus collab&quot; /&gt;&lt;/p&gt;
+&lt;img src&#x3D;&quot;/images/2022-posts/theseus_plus_futurewei.svg&quot; alt&#x3D;&quot;Futurewei plus Theseus collab&quot; /&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;We look forward to another productive year!&lt;/p&gt;
 &lt;p&gt;Time to get Theseus onto some real devices! &lt;sup&gt;hint hint&lt;/sup&gt;&lt;/p&gt;
