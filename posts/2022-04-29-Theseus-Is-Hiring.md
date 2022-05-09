@@ -148,4 +148,4 @@ We recognize your time is valuable: meetings are kept to a minimum! That being s
 | <div align="center"> **Kevin Boos** <br> Founder & Creator of Theseus <br> PhD, Rice University </div> | <div align="center"> **Puma** <br> Chief Morale Officer <br> PhD in Ball Fetching, sneaky Zoom ninja </div> |
 
 
-Thanks, we look forward to meeting you!
+Thanks, and we look forward to meeting you!
