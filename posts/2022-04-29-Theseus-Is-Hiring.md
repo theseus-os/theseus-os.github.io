@@ -29,7 +29,7 @@ Theseus's goals span the gamut from supporting cutting-edge exploratory research
 Lately, our focus is on deep support for WebAssembly (WASM) interfaces and runtimes, as well as porting Theseus to additional architectures (e.g., ARM).
 As such, your development project ([more ideas below](#project-ideas)) will likely be related to one of those areas.
 
-Other job responsibilites include:
+Other job responsibilities include:
 * Collaborating with the general public in an open-source environment
 * Addressing issues and solving bugs/problems expediently
 * Writing easily readable code and documenting it well
@@ -47,7 +47,7 @@ Other job responsibilites include:
 
 ### Compensation and Term
 
-$45-$75 USD per hour (approx. $7500-$12,000 USD monthly), commensurate with experience.
+$35-$65 USD per hour (approx. $5,500-$10,000 USD monthly), commensurate with experience and performance.
 
 The initial employment term is:
 * 3-4 months if full-time (~40 hours per week) 
