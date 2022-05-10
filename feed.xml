@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/blog/</uri>
     </author>
-    <updated>2022-05-09T21:24:48+00:00</updated>
+    <updated>2022-05-10T16:20:46+00:00</updated>
 
     
     <entry>
@@ -32,7 +32,7 @@ with the objective of realizing next-generation safety and efficiency guarantees
 Theseus&#x27;s goals span the gamut from supporting cutting-edge exploratory research topics to more practical concerns of achieving legacy compatibility and usability.&lt;/p&gt;
 &lt;p&gt;Lately, our focus is on deep support for WebAssembly (WASM) interfaces and runtimes, as well as porting Theseus to additional architectures (e.g., ARM).
 As such, your development project (&lt;a href&#x3D;&quot;#project-ideas&quot;&gt;more ideas below&lt;/a&gt;) will likely be related to one of those areas.&lt;/p&gt;
-&lt;p&gt;Other job responsibilites include:&lt;/p&gt;
+&lt;p&gt;Other job responsibilities include:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Collaborating with the general public in an open-source environment&lt;/li&gt;
 &lt;li&gt;Addressing issues and solving bugs/problems expediently&lt;/li&gt;
