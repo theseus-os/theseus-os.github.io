@@ -6,14 +6,14 @@ This blog provides detailed status updates and useful information about Theseus 
 
 ### Attribution
 
-This blog was adapted from [The Rust blog](https://github.com/rust-lang/blog.rust-lang.org), implemented as a small static site generator and that deployed to GitHub Pages.
+This blog was adapted from [The Rust blog](https://github.com/rust-lang/blog.rust-lang.org), implemented as a small static site generator that gets deployed to GitHub Pages.
 
 ## Building
 
 To build the site locally:
 
 ```console
-> git clone https://github.com/theseus-os/blog Theseus_blog
+> git clone https://github.com/theseus-os/theseus-os.github.io.git Theseus_blog
 > cd Theseus_blog
 > cargo run
 ```
