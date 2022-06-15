@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>More progress porting wasmtime to Theseus | Theseus OS Blog</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="description" content="Theseus OS Blog">
+    
+
+
+
+<!-- styles -->
+<link rel="stylesheet" href="/styles/vendor.css"/>
+<link rel="stylesheet" href="/styles/fonts.css"/>
+<link rel="stylesheet" href="/styles/app.css"/>
+<link rel="stylesheet" href="/styles/highlight.css"/>
+
+<!-- FontAwesome font-awesome (for icons) -->
+<link rel="stylesheet" href="/FontAwesome/css/font-awesome.min.css"/>
+
+<!-- favicon -->
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.ico">
+<link rel="icon" type="image/svg+xml" href="/images/theseus_ship.svg">
+<link rel="manifest" href="/images/site.webmanifest">
+
+<meta name="msapplication-TileColor" content="#00aba9">
+<meta name="theme-color" content="#ffffff">
+
+ <!-- atom -->
+ <link type="application/atom+xml" rel="alternate" href="https://theseus-os.github.io/feed.xml" title="Theseus OS Blog" />
+
+  </head>
+  <body>
+    <nav class="flex flex-row justify-center justify-end-l items-center flex-wrap ph2 pl3-ns pr4-ns">
+  <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
+    <a href="/">
+      <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
+      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+    </a>
+  </div>
+
+  <ul class="nav list w-100 w-auto-l flex flex-none flex-row flex-wrap justify-center justify-end-l items-center pv2 ph0 ph4-ns">
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/theseus-os/Theseus" target="_blank" rel="noopener">Theseus&nbsp;OS<i style="padding-left: 0.33em;" id="github-icon" class="fa fa-github" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/book/index.html" target="_blank" rel="noopener">Book<i style="padding-left: 0.33em;" id="book-icon" class="fa fa-book" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://theseus-os.github.io/Theseus/doc/___Theseus_Crates___/index.html" target="_blank" rel="noopener">Docs<i style="padding-left: 0.33em;" id="docs-icon" class="fa fa-cubes" aria-hidden="true"></i></a>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="https://github.com/sponsors/kevinaboos" target="_blank" rel="noopener">Sponsor&nbsp;Us<i style="padding-left: 0.33em;" id="sponsor-icon" class="fa fa-heart-o" aria-hidden="true"></i>
+      </span>
+    </li>
+    <li class="tc pv2 ph2 ph4-ns flex-20-s">
+      <span style="white-space: nowrap;">
+        <a href="mailto:theseus.systems@gmail.com?subject=Interested in Theseus OS!">Email<i style="padding-left: 0.33em;" id="email" class="fa fa-envelope-o" aria-hidden="true"></i></a>
+      </span>    
+    </li>
+  </ul>
+</nav>
+
+<section id="More progress porting wasmtime to Theseus" class="white">
+  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+    <header>
+      <h2>More progress porting wasmtime to Theseus</h2>
+      <div class="highlight mt2 mb3"></div>
+    </header>
+
+    <div class="publish-date-author">Apr. 12, 2022 &nbsp;&middot;&nbsp; by <a target="_blank" href="https://github.com/kevinaboos">Kevin Boos</a>
+    
+    </div>
+
+    <div class="post">
+      <h2><a href="#the-quest-port-continues" aria-hidden="true" class="anchor" id="the-quest-port-continues"></a>The <s>quest</s> port continues</h2>
+<p>This post covers the highlights of our ongoing work to port <code>wasmtime</code> to Theseus; see the previous post(s) for more information.
+Interested folks can <a href="https://github.com/theseus-os/wasmtime/tree/theseus">follow along with the ported <code>wasmtime</code> code here</a>.</p>
+<p>📢 Good news: <code>wasmtime-runtime</code> now builds on Theseus! 📢</p>
+<h3><a href="#completed-initial-port-of-wasmtime-runtime" aria-hidden="true" class="anchor" id="completed-initial-port-of-wasmtime-runtime"></a>Completed initial port of <code>wasmtime-runtime</code>!</h3>
+<p>Last time we left off having finished several key features to support the needs of the <code>wasmtime-runtime</code> crate:</p>
+<ul>
+<li>Thread-Local Storage (TLS)</li>
+<li>Creation and management of Unix-like memory-mapped areas via the <code>region</code> and <code>libc</code> crates
+<ul>
+<li>Plus additions to <code>tlibc</code>, the Theseus-specific implementation of basic libc functions</li>
+</ul>
+</li>
+<li>Reading/writing of object files via the <code>object</code> crate</li>
+<li>Improvements to Theseus's <code>page_allocator</code> and <code>theseus_cargo</code> build tool to handle more complexity</li>
+</ul>
+<p>The full list of required, target-agnostic dependencies is as follows:</p>
+<pre><code class="language-toml">[package]
+name = &quot;wasmtime-runtime&quot;
+...
+
+[dependencies]
+wasmtime-environ = { path = &quot;../environ&quot;, version = &quot;0.30.0&quot; }  ## Ported to `no_std` previously
+libc = { version = &quot;0.2.82&quot;, default-features = false }         ## Ported to Theseus in prior post
+region = &quot;2.1.0&quot;         ## Ported to Theseus in prior post
+log = &quot;0.4.8&quot;            ## Supports `no_std`
+memoffset = &quot;0.6.0&quot;      ## Supports `no_std`
+indexmap = &quot;1.0.2&quot;       ## Supports `no_std`
+thiserror = &quot;1.0.4&quot;      ## Use `thiserror_core2` instead
+more-asserts = &quot;0.2.1&quot;   ## Ported to `no_std` in prior post
+cfg-if = &quot;1.0&quot;           ## Supports `no_std`
+backtrace = &quot;0.3.61&quot;     ## Ported to Theseus in this post
+lazy_static = &quot;1.3.0&quot;    ## Supports `no_std`
+rand = &quot;0.8.3&quot;           ## Offers `no_std`-compatible `SmallRng`
+anyhow = &quot;1.0.38&quot;        ## Supports `no_std`, with code changes
+</code></pre>
+<p>Over the past several weeks, we have completed our modifications to <code>wasmtime-runtime</code> such that it now builds properly on Theseus!
+The key missing parts were:</p>
+<table>
+<thead>
+<tr>
+<th>Crate / Feature</th>
+<th>Summary</th>
+<th>Reason Needed for <code>wasmtime-runtime</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backtrace</code></td>
+<td>Cross-platform crate for capturing stack traces</td>
+<td>For capturing and analyzing stack traces to see if any WASM module functions exist on the call stack</td>
+</tr>
+<tr>
+<td><code>std::path</code></td>
+<td>Module for manipulating and parsing file paths</td>
+<td>To refer to WASM module files, and for (de)serialization</td>
+</tr>
+<tr>
+<td><code>resume_unwind()</code></td>
+<td>Continues a panic action (e.g., unwinding), but skips the registered panic hook</td>
+<td>To continue propagating a panic across a native code-WASM boundary</td>
+</tr>
+<tr>
+<td><code>thiserror</code>/<code>anyhow</code></td>
+<td>Helper crates for convenient error handling</td>
+<td>To derive the <code>Error</code> trait and easily return error types</td>
+</tr>
+<tr>
+<td>Signal handling</td>
+<td>Registering signal handlers, e.g., for <code>SIGSEGV</code>, <code>SIGILL</code></td>
+<td>For catching OS-level exceptions that occur while executing native code compiled from WASM modules</td>
+</tr>
+</tbody>
+</table>
+<h4><a href="#backtrace-to-the-future" aria-hidden="true" class="anchor" id="backtrace-to-the-future"></a><code>Back</code>(<code>trace</code>) to the Future</h4>
+<p>The <code>wasmtime-runtime</code> crate uses <code>backtrace</code> to capture a stack trace when a <em>trap</em> occurs, such as a fault during WASM execution or another systems-level problem like Out Of Memory (OOM).
+This trace is used to both:</p>
+<ol>
+<li>Traverse the call stack to see if any stack frames from WASM code exist, and</li>
+<li>Provide the user or caller of <code>wasmtime</code> with more context about a runtime failure.</li>
+</ol>
+<p>Porting <code>backtrace</code> was relatively simple; the primary changes required were to publicly expose more details about Theseus's custom unwinder.
+Feel free to <a href="https://github.com/theseus-os/backtrace-rs/compare/5e15d73..c56bae0">check out the full changeset here</a>, summarized below:</p>
+<ul>
+<li>Theseus's unwinder calculates the register values for each stack frame. We simply use those values to provide <code>backtrace</code> with:
+<ul>
+<li>The stack frame's instruction pointer (i.e., <em>call site address</em>)</li>
+<li>The current stack pointer at that execution point</li>
+<li>The starting address of its containing function</li>
+</ul>
+</li>
+<li>Theseus supports <em>symbolication</em>: resolving an address into a symbol
+<ul>
+<li>This uses Theseus's crate management metadata, a <a href="https://www.theseus-os.com/Theseus/doc/mod_mgmt/struct.CrateNamespace.html"><code>CrateNamespace</code></a>, which contains a map of all public symbols in that namespace</li>
+<li>The key function is <a href="https://www.theseus-os.com/Theseus/doc/mod_mgmt/struct.CrateNamespace.html#method.get_section_containing_address"><code>get_section_containing_address()</code></a>
+<ul>
+<li>This is similar to the <a href="https://linux.die.net/man/1/addr2line"><code>addr2line</code></a> tool, but it works with Theseus's dynamically loading and linked code structure</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>The one remaining feature that our port of <code>backtrace</code> lacks is connecting a resolved symbol to its location: file path, line number, and column number.
+This is conceptually easy to do but requires debug information to be parsed from an object file.
+Although <a href="https://www.theseus-os.com/Theseus/doc/debug_info/index.html">Theseus does support parsing DWARF debug info</a>, it isn't always available because debug info is typically stripped from object files to keep their size down.
+Fortunately, the <code>backtrace</code> crate treats this information as optional, and thus <code>wasmtime</code> doesn't require it to be available, so we can simply return <code>None</code> when asked for symbol location details.</p>
+<h4><a href="#the-path-forwards" aria-hidden="true" class="anchor" id="the-path-forwards"></a>The <code>Path</code> Forwards</h4>
+<p>Many <code>wasmtime</code> crates use <code>std::path::{Path, PathBuf}</code> to refer to WASM module files that are JIT-compiled and loaded into a <code>wasmtime</code> engine.
+Thus, we must implement a version of path types that are API-compatible with Rust's <code>std::path</code> types in order to minimize the number of changes to <code>wasmtime</code> itself.
+You can find <a href="https://github.com/theseus-os/Theseus/commit/6a4ba4f42ae407afe71dd77042fa15a523e15134">the code for that here</a>, which is primarily a quick &amp; dirty copy of the code from <code>std::path</code>.</p>
+<p>Theseus already offers <a href="https://www.theseus-os.com/Theseus/doc/path/struct.Path.html">its own <code>Path</code> type</a>, which is similar but not identical to those in Rust <code>std::path</code>.
+All we need is a simple glue code layer between <code>std::PathBuf</code> and Theseus's <code>path::Path</code>.</p>
+<blockquote>
+<p>One notable difference between <code>std::path</code> and <code>theseus_path</code> is that Theseus uses Rust <code>String</code> and <code>str</code> types natively, so there is no need for the equivalent types <code>OsString</code> and <code>OsStr</code>; these types become simple typedefs in Theseus:</p>
+<pre><code class="language-rust">pub type OsString = String;
+pub type OsStr = str;
+</code></pre>
+</blockquote>
+<h4><a href="#relax-and-unwind" aria-hidden="true" class="anchor" id="relax-and-unwind"></a>Relax and unwind</h4>
+<p>The <code>resume_unwind()</code> function is used in <code>wasmtime</code> to carry on with the unwinding procedure after it has been <em>caught</em>. This is currently only used in the runtime's trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.</p>
+<p>Here is Theseus's <a href="https://github.com/theseus-os/Theseus/commit/ca960df2a61d807f23514469a94355ee2689c556#diff-d17ff1523da38049c7e75df2747fc33e3a18dea8c6a57ecb1ba5590ff6f1a699">implementation of <code>resume_unwind()</code> with code that tests it</a>.
+Although this is conceptually tricky, the implementation is quite straightforward — simply start unwinding from the current point without starting from the regular panic handler.
+You can test this in Theseus by invoking the test program <code>unwind_test -c</code>.</p>
+<p>To actually use our new <code>resume_unwind()</code> function in <code>wasmtime-runtime</code>, we add <a href="https://github.com/theseus-os/wasmtime/blob/076a39724c76ad29423db5e4aae7ef1d15530693/crates/runtime/src/traphandlers.rs#L267-L272">the following very simple code block</a>.</p>
+<pre><code class="language-rust">#[cfg(feature = &quot;std&quot;)]
+std::panic::resume_unwind(panic);
+#[cfg(target_os = &quot;theseus&quot;)]
+theseus_catch_unwind::resume_unwind(
+    KillReason::Panic(PanicInfoOwned::from_payload(panic))
+);
+</code></pre>
+<blockquote>
+<p>The notable difference between Theseus's <code>resume_unwind</code> and Rust's <code>std::panic::resume_unwind</code> is that we allow unwinding to occur from both a language-level panic and <em>beneath</em> the language level after a CPU-level &quot;machine&quot; exception.
+Thus, Theseus's panic payloads expect a <a href=""><code>KillReason</code></a> rather than an erased type <code>Box&lt;Any&gt;</code>, so we must handle that minor difference.</p>
+</blockquote>
+<h4><a href="#oh-an-error-occurred-anyway-anyhow" aria-hidden="true" class="anchor" id="oh-an-error-occurred-anyway-anyhow"></a>Oh, an <code>Error</code> Occurred? <s>Anyway</s> Anyhow...</h4>
+<p>In yet another tribute to D. Tolnay, <code>wasmtime</code> uses his superb <code>anyhow</code> and <code>thiserror</code> crates for convenient error handling across nearly every source file and function.
+While <code>anyhow</code> technically supports <code>no_std</code> environments like Theseus, it cannot accommodate the same API.</p>
+<blockquote>
+<p>Thus, we must change <strong><em>every</em>. <em>single</em>. <em>usage</em>.</strong> of <code>anyhow</code> in the whole <code>wasmtime</code> code base.</p>
+</blockquote>
+<p>The majority of the changes simply require use to add this snippet to any <code>Result</code> type before returning or unwrapping it:</p>
+<pre><code class="language-rust">.map_err(anyhow::Error::msg)?  // convert the `Err` into `anyhow::Error`
+</code></pre>
+<p>because in <code>no_std</code> environments, <code>anyhow::Error</code> does not <code>impl std::error::Error</code> and thus cannot perform the implicit conversion; we must do it explicitly.
+This rough edge is currently unavoidable, as evidenced by <a href="https://github.com/dtolnay/anyhow#no-std-support"><code>anyhow</code>'s documentation</a>.</p>
+<p>As you can see, most of these changes are functionally unnecessary. The real reason for such tedium is that the <code>Error</code> trait is defined in Rust's <code>std</code> library and is thus unavailable for use in <code>no_std</code> environments that only use <code>core</code> or <code>alloc</code>.</p>
+<p>Thankfully, supporting <code>thiserror</code> is a bit easier, thanks to the <a href="https://github.com/bbqsrc/thiserror-core2"><code>thiserror_core2</code> crate</a> that ports it to emit a derivation of the <a href="https://github.com/technocreatives/core2"><code>core2::error::Error</code> trait</a>. We can simply use this as a drop-in replacement for <code>thiserror</code> because we already use <code>core2::error::Error</code> as a substitute for <code>std::error::Error</code>.</p>
+<p>💤💭💤 We dream of the day when <a href="https://github.com/yaahc">@Jane Lusby</a>'s excellent work on moving the <code>Error</code> trait into <code>core</code> is completed! Once that lands, we won't need to bother with all this pablum.</p>
+<h4><a href="#the-last-jedi-dependency-signal-handling" aria-hidden="true" class="anchor" id="the-last-jedi-dependency-signal-handling"></a>The Last <s>Jedi</s> Dependency: Signal Handling</h4>
+<p>The last remaining feature needed to finish porting <code>wasmtime-runtime</code> is signal handling.
+This is needed for <code>wasmtime</code> to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.</p>
+<p>Theseus doesn't offer POSIX-like signals because they're unsafe and unnecessary in a safe-language OS, but it does implement handlers for <a href="https://wiki.osdev.org/Exceptions">CPU exceptions</a>, e.g., page faults, general protection faults, etc.
+However, we previously did not allow third-party crates to register handlers (callbacks)</p>
+<p>Registering  &quot;signal&quot; (CPU exception) handlers is now supported in Theseus as of <a href="https://github.com/theseus-os/Theseus/commit/09ccbfc644da93e98ef11c9532ef926f1ee7b4f4">commit </a>.
+The initial implementation is limited to the following four categories of &quot;signals&quot;, which was loosely based on the set of signals that <code>wasmtime-runtime</code> cares about.</p>
+<pre><code class="language-rust">/// The possible &quot;signals&quot; that may occur due to CPU exceptions.
+pub enum Exception {
+    /// (SIGSEGV) Bad virtual address, unexpected page fault.
+    InvalidAddress     = 0,
+    /// (SIGILL) Invalid opcode, malformed instruction, etc.
+    IllegalInstruction = 1,
+    /// (SIGBUS) Bad memory alignment, non-existent physical address.
+    BusError           = 2,
+    /// (SIGFPE) Bad arithmetic operation, e.g., divide by zero.
+    ArithmeticError    = 3,
+}
+</code></pre>
+<p>Each task can register one handler function for each category of exceptions:</p>
+<pre><code class="language-rust">pub trait ExceptionHandler = FnOnce(&amp;ExceptionContext) -&gt; Result&lt;(), ()&gt;;
+
+pub fn register_handler(
+    exception: Exception,
+    handler: Box&lt;dyn ExceptionHandler&gt;,
+) -&gt; Result&lt;(), ()&gt; {
+    HANDLERS.with(|handlers| {
+        let handler_slot = &amp;handlers[exception as usize];
+        if handler_slot.borrow().is_some() {
+            return Err(());
+        }
+        *handler_slot.borrow_mut() = Some(handler);
+        Ok(())
+    })
+}
+</code></pre>
+<p>and the Thread-Local Storage (TLS) areas are used to efficiently access the handlers registered for each given task:</p>
+<pre><code class="language-rust">thread_local!{
+    /// The &quot;signal&quot; handlers registered for each task.
+    static HANDLERS: [RefCell&lt;Option&lt;Box&lt;dyn ExceptionHandler&gt;&gt;&gt;; 4] = Default::default();
+}
+</code></pre>
+<p>When an exception occurs, the CPU jumps synchronously to the kernel function specified in the interrupt descriptor table (IDT).
+We simply <a href="https://github.com/theseus-os/Theseus/blob/13406ed975d54b5d72afb313df370d0a4477ce01/kernel/exceptions_full/src/lib.rs#L185-L200">add a condition to each IDT exception function</a> to check for and obtain the relevant registered exception handler (if one exists).
+The registered handler is then invoked with the following contextual information about said exception; the key information is the <code>instruction_pointer</code>.</p>
+<pre><code class="language-rust">/// Information that is passed to a registered [`ExceptionHandler`]
+/// about an exception that occurred during execution.
+pub struct ExceptionContext {
+    pub instruction_pointer: VirtualAddress,
+    pub stack_pointer: VirtualAddress,
+    pub exception: Exception,
+    pub error_code: Option&lt;ErrorCode&gt;,
+}
+</code></pre>
+<p>This feature is <a href="https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L40-L48">used in the trap handling component</a> of our port of <code>wasmtime-runtime</code>, which needs the above context to determine whether the exception occurred in a section of code that came from a compiled WASM module.
+Of course, the handlers must first be registered as part of the <a href="https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L16-L26">platform-specific init procedure shown here</a>.</p>
+<h2><a href="#onwards-and-upwards" aria-hidden="true" class="anchor" id="onwards-and-upwards"></a>Onwards and Upwards</h2>
+<p>With that, our port of <code>wasmtime-runtime</code> is complete!
+We're nearly done with the &quot;minimum viable port&quot; of wasmtime functionality, as the only remaining crates are <code>wasmtime-jit</code> and the top-level <code>wasmtime</code> crate itself.
+Once those are complete, we will publish a longer-form post about the journey to get wasmtime running on Theseus.</p>
+<p>Be on the lookout for such good news soon!</p>
+<h2><a href="#miscellaneous-contributions" aria-hidden="true" class="anchor" id="miscellaneous-contributions"></a>Miscellaneous Contributions</h2>
+<ul>
+<li>Fixed an <a href="https://github.com/theseus-os/Theseus/commit/78d0e008f9b5b89a11fca388442f395cde040569">issue with TLS sections</a>, which required adding support for loading <code>.tbss</code> (TLS BSS) sections</li>
+<li><a href="https://github.com/jacob-earle">@Jacob Earle</a> implemented a <a href="https://github.com/theseus-os/Theseus/commit/23bcfce0eb4303cb21ea3ff38afba8ae04013eab">rate-monotonic scheduler</a> for pseudo-real-time task scheduling
+<ul>
+<li>Adds a <a href="https://www.theseus-os.com/Theseus/doc/sleep/index.html"><code>sleep</code> crate</a> that handles blocking a task for a given number of system ticks</li>
+<li>Supports the notion of &quot;periodic&quot; tasks that run a short workload, go to sleep, and then wake back up at the beginning of every period</li>
+</ul>
+</li>
+<li><a href="https://github.com/theseus-os/Theseus/commit/be9e9ed2c4a4baef45e321b2aa1fe50ea399218d">Updated to the latest Rust 1.61 nightly version</a>
+<ul>
+<li>This was required to fix the ABI issues in LLVM, wherein the <code>&quot;x86-interrupt&quot;</code> ABI for exception handlers didn't properly match what the CPU pushes onto the stack before jumping to said handler</li>
+<li>Needed as part of <a href="#the-last-sjedis-dependency-signal-handling">the aforementioned effort</a> to support registering third-party &quot;signal&quot; (exception) handlers in Theseus</li>
+</ul>
+</li>
+<li>Kevin contributed a <a href="https://github.com/rust-osdev/x86_64/pull/354">tiny PR</a> back to the <code>x86_64</code> crate
+<ul>
+<li>We had been using our own outdated fork for a while, but we now use the <a href="https://github.com/theseus-os/Theseus/commit/7d979328b3a6c2b59a29aa0b43d96f5997b36171">latest version of the <code>x86_64</code> crate</a> with a tiny addition to support a <code>LockedIDT</code> type.</li>
+</ul>
+</li>
+<li><a href="https://github.com/Ramla-I">@Ramla Ijaz</a> finished implementing <a href="https://github.com/theseus-os/Theseus/commit/700daa0f959243c04e424c64649ca5660b5cb210">packet tranmission for the Mellanox 100GiB NIC</a></li>
+</ul>
+
+    </div>
+
+    <div>
+      <br />
+      <hr>
+       <a href="../../../2022/02/03/wasmtime-progress-update.html" style="float: left;"><< Previous Post</a>  
+       <a href="../../../2022/04/29/Theseus-Is-Hiring.html" style="float: right;">Next Post >></a>  
+    </div>
+  </div>
+</section>
+
+    <footer>
+  <div class="w-100 mw-none ph3 mw8-m mw9-l center f3">
+    <div class="row">
+      <div class="four columns mt3 mt0-l" id="get-help">
+        <h4>More info</h4>
+        <ul>
+          <li><a href="https://github.com/theseus-os/Theseus/">Theseus OS on GitHub</a></li>
+          <li><a href="https://github.com/theseus-os/">Theseus OS Organization</a></li>
+          <li><a href="mailto:theseus.systems@gmail.com">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Terms and policies</h4>
+        <ul>
+          <li><a href="https://www.rust-lang.org/policies/code-of-conduct">Rust's Code of Conduct</a></li>
+          <li>Licenses:  <a href="https://opensource.org/licenses/MIT">MIT</a>  <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a></li>
+          <li>Format based on <a href="https://github.com/rust-lang/blog.rust-lang.org">Rust's Blog</a></li>
+        </ul>
+      </div>
+      <div class="four columns mt3 mt0-l">
+        <h4>Social</h4>
+        <div class="flex flex-row flex-wrap">
+          <a href="https://discord.gg/NuUnqeYT8R" target="_blank" rel="noopener" alt="discord link"><img src="/images/discord.svg" alt="discord logo" title="Discord"/></a>
+          <a href="https://github.com/theseus-os" target="_blank" rel="noopener" alt="github link"><img src="/images/github.svg" alt="github logo" title="GitHub"/></a>
+          <a href="https://www.youtube.com/c/KevinBoosPhD" target="_blank" rel="noopener" alt="youtube link"><img style="padding-top: 6px; padding-bottom:6px" src="/images/youtube.svg" alt="youtube logo" title="YouTube"/></a>
+          <a href="https://twitter.com/rustlang" target="_blank" rel="noopener" alt="twitter link"><img src="/images/twitter.svg" alt="twitter logo" title="Twitter"/></a>
+        </div>
+        <h4 class="mt4 mb3">RSS</h4>
+        <ul>
+          <li><a href="/feed.xml">Theseus Blog RSS Feed</a></li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="attribution">
+      Maintained by the Theseus OS organization. See a typo?
+      <a href="https://github.com/theseus-os/theseus-os.github.io" target="_blank" rel="noopener">File an issue here</a>!
+    </div>
+  </div>
+</footer>
+
+<!-- scripts -->
+<script src="/scripts/highlight.js"></script>
+
+  </body>
+</html>

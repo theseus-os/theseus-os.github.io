@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/</uri>
     </author>
-    <updated>2022-06-10T18:32:15+00:00</updated>
+    <updated>2022-06-15T18:52:39+00:00</updated>
 
     
     <entry>
@@ -169,6 +169,251 @@ If in the U.S., you will be hired as a standard 1099 independent contractor, as 
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;Thanks, and we look forward to meeting you!&lt;/p&gt;
+</content>
+
+        <author>
+            <name>Kevin Boos</name>
+        </author>
+    </entry>
+    
+    <entry>
+        <title>More progress porting wasmtime to Theseus</title>
+        <link rel="alternate" href="https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html" type="text/html" title="More progress porting wasmtime to Theseus" />
+        <published>2022-04-12T00:00:00+00:00</published>
+        <updated>2022-04-12T00:00:00+00:00</updated>
+        <id>https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html</id>
+        <content type="html" xml:base="https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#the-quest-port-continues&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-quest-port-continues&quot;&gt;&lt;/a&gt;The &lt;s&gt;quest&lt;/s&gt; port continues&lt;/h2&gt;
+&lt;p&gt;This post covers the highlights of our ongoing work to port &lt;code&gt;wasmtime&lt;/code&gt; to Theseus; see the previous post(s) for more information.
+Interested folks can &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/tree/theseus&quot;&gt;follow along with the ported &lt;code&gt;wasmtime&lt;/code&gt; code here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;📢 Good news: &lt;code&gt;wasmtime-runtime&lt;/code&gt; now builds on Theseus! 📢&lt;/p&gt;
+&lt;h3&gt;&lt;a href&#x3D;&quot;#completed-initial-port-of-wasmtime-runtime&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;completed-initial-port-of-wasmtime-runtime&quot;&gt;&lt;/a&gt;Completed initial port of &lt;code&gt;wasmtime-runtime&lt;/code&gt;!&lt;/h3&gt;
+&lt;p&gt;Last time we left off having finished several key features to support the needs of the &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Thread-Local Storage (TLS)&lt;/li&gt;
+&lt;li&gt;Creation and management of Unix-like memory-mapped areas via the &lt;code&gt;region&lt;/code&gt; and &lt;code&gt;libc&lt;/code&gt; crates
+&lt;ul&gt;
+&lt;li&gt;Plus additions to &lt;code&gt;tlibc&lt;/code&gt;, the Theseus-specific implementation of basic libc functions&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Reading/writing of object files via the &lt;code&gt;object&lt;/code&gt; crate&lt;/li&gt;
+&lt;li&gt;Improvements to Theseus&#x27;s &lt;code&gt;page_allocator&lt;/code&gt; and &lt;code&gt;theseus_cargo&lt;/code&gt; build tool to handle more complexity&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The full list of required, target-agnostic dependencies is as follows:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-toml&quot;&gt;[package]
+name &#x3D; &amp;quot;wasmtime-runtime&amp;quot;
+...
+
+[dependencies]
+wasmtime-environ &#x3D; { path &#x3D; &amp;quot;../environ&amp;quot;, version &#x3D; &amp;quot;0.30.0&amp;quot; }  ## Ported to &#x60;no_std&#x60; previously
+libc &#x3D; { version &#x3D; &amp;quot;0.2.82&amp;quot;, default-features &#x3D; false }         ## Ported to Theseus in prior post
+region &#x3D; &amp;quot;2.1.0&amp;quot;         ## Ported to Theseus in prior post
+log &#x3D; &amp;quot;0.4.8&amp;quot;            ## Supports &#x60;no_std&#x60;
+memoffset &#x3D; &amp;quot;0.6.0&amp;quot;      ## Supports &#x60;no_std&#x60;
+indexmap &#x3D; &amp;quot;1.0.2&amp;quot;       ## Supports &#x60;no_std&#x60;
+thiserror &#x3D; &amp;quot;1.0.4&amp;quot;      ## Use &#x60;thiserror_core2&#x60; instead
+more-asserts &#x3D; &amp;quot;0.2.1&amp;quot;   ## Ported to &#x60;no_std&#x60; in prior post
+cfg-if &#x3D; &amp;quot;1.0&amp;quot;           ## Supports &#x60;no_std&#x60;
+backtrace &#x3D; &amp;quot;0.3.61&amp;quot;     ## Ported to Theseus in this post
+lazy_static &#x3D; &amp;quot;1.3.0&amp;quot;    ## Supports &#x60;no_std&#x60;
+rand &#x3D; &amp;quot;0.8.3&amp;quot;           ## Offers &#x60;no_std&#x60;-compatible &#x60;SmallRng&#x60;
+anyhow &#x3D; &amp;quot;1.0.38&amp;quot;        ## Supports &#x60;no_std&#x60;, with code changes
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Over the past several weeks, we have completed our modifications to &lt;code&gt;wasmtime-runtime&lt;/code&gt; such that it now builds properly on Theseus!
+The key missing parts were:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Crate / Feature&lt;/th&gt;
+&lt;th&gt;Summary&lt;/th&gt;
+&lt;th&gt;Reason Needed for &lt;code&gt;wasmtime-runtime&lt;/code&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;backtrace&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Cross-platform crate for capturing stack traces&lt;/td&gt;
+&lt;td&gt;For capturing and analyzing stack traces to see if any WASM module functions exist on the call stack&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;std::path&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Module for manipulating and parsing file paths&lt;/td&gt;
+&lt;td&gt;To refer to WASM module files, and for (de)serialization&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;resume_unwind()&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Continues a panic action (e.g., unwinding), but skips the registered panic hook&lt;/td&gt;
+&lt;td&gt;To continue propagating a panic across a native code-WASM boundary&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;thiserror&lt;/code&gt;/&lt;code&gt;anyhow&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Helper crates for convenient error handling&lt;/td&gt;
+&lt;td&gt;To derive the &lt;code&gt;Error&lt;/code&gt; trait and easily return error types&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Signal handling&lt;/td&gt;
+&lt;td&gt;Registering signal handlers, e.g., for &lt;code&gt;SIGSEGV&lt;/code&gt;, &lt;code&gt;SIGILL&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;For catching OS-level exceptions that occur while executing native code compiled from WASM modules&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#backtrace-to-the-future&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;backtrace-to-the-future&quot;&gt;&lt;/a&gt;&lt;code&gt;Back&lt;/code&gt;(&lt;code&gt;trace&lt;/code&gt;) to the Future&lt;/h4&gt;
+&lt;p&gt;The &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate uses &lt;code&gt;backtrace&lt;/code&gt; to capture a stack trace when a &lt;em&gt;trap&lt;/em&gt; occurs, such as a fault during WASM execution or another systems-level problem like Out Of Memory (OOM).
+This trace is used to both:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Traverse the call stack to see if any stack frames from WASM code exist, and&lt;/li&gt;
+&lt;li&gt;Provide the user or caller of &lt;code&gt;wasmtime&lt;/code&gt; with more context about a runtime failure.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Porting &lt;code&gt;backtrace&lt;/code&gt; was relatively simple; the primary changes required were to publicly expose more details about Theseus&#x27;s custom unwinder.
+Feel free to &lt;a href&#x3D;&quot;https://github.com/theseus-os/backtrace-rs/compare/5e15d73..c56bae0&quot;&gt;check out the full changeset here&lt;/a&gt;, summarized below:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Theseus&#x27;s unwinder calculates the register values for each stack frame. We simply use those values to provide &lt;code&gt;backtrace&lt;/code&gt; with:
+&lt;ul&gt;
+&lt;li&gt;The stack frame&#x27;s instruction pointer (i.e., &lt;em&gt;call site address&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;The current stack pointer at that execution point&lt;/li&gt;
+&lt;li&gt;The starting address of its containing function&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Theseus supports &lt;em&gt;symbolication&lt;/em&gt;: resolving an address into a symbol
+&lt;ul&gt;
+&lt;li&gt;This uses Theseus&#x27;s crate management metadata, a &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/mod_mgmt/struct.CrateNamespace.html&quot;&gt;&lt;code&gt;CrateNamespace&lt;/code&gt;&lt;/a&gt;, which contains a map of all public symbols in that namespace&lt;/li&gt;
+&lt;li&gt;The key function is &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/mod_mgmt/struct.CrateNamespace.html#method.get_section_containing_address&quot;&gt;&lt;code&gt;get_section_containing_address()&lt;/code&gt;&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;This is similar to the &lt;a href&#x3D;&quot;https://linux.die.net/man/1/addr2line&quot;&gt;&lt;code&gt;addr2line&lt;/code&gt;&lt;/a&gt; tool, but it works with Theseus&#x27;s dynamically loading and linked code structure&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The one remaining feature that our port of &lt;code&gt;backtrace&lt;/code&gt; lacks is connecting a resolved symbol to its location: file path, line number, and column number.
+This is conceptually easy to do but requires debug information to be parsed from an object file.
+Although &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/debug_info/index.html&quot;&gt;Theseus does support parsing DWARF debug info&lt;/a&gt;, it isn&#x27;t always available because debug info is typically stripped from object files to keep their size down.
+Fortunately, the &lt;code&gt;backtrace&lt;/code&gt; crate treats this information as optional, and thus &lt;code&gt;wasmtime&lt;/code&gt; doesn&#x27;t require it to be available, so we can simply return &lt;code&gt;None&lt;/code&gt; when asked for symbol location details.&lt;/p&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#the-path-forwards&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-path-forwards&quot;&gt;&lt;/a&gt;The &lt;code&gt;Path&lt;/code&gt; Forwards&lt;/h4&gt;
+&lt;p&gt;Many &lt;code&gt;wasmtime&lt;/code&gt; crates use &lt;code&gt;std::path::{Path, PathBuf}&lt;/code&gt; to refer to WASM module files that are JIT-compiled and loaded into a &lt;code&gt;wasmtime&lt;/code&gt; engine.
+Thus, we must implement a version of path types that are API-compatible with Rust&#x27;s &lt;code&gt;std::path&lt;/code&gt; types in order to minimize the number of changes to &lt;code&gt;wasmtime&lt;/code&gt; itself.
+You can find &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/6a4ba4f42ae407afe71dd77042fa15a523e15134&quot;&gt;the code for that here&lt;/a&gt;, which is primarily a quick &amp;amp; dirty copy of the code from &lt;code&gt;std::path&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Theseus already offers &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/path/struct.Path.html&quot;&gt;its own &lt;code&gt;Path&lt;/code&gt; type&lt;/a&gt;, which is similar but not identical to those in Rust &lt;code&gt;std::path&lt;/code&gt;.
+All we need is a simple glue code layer between &lt;code&gt;std::PathBuf&lt;/code&gt; and Theseus&#x27;s &lt;code&gt;path::Path&lt;/code&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;One notable difference between &lt;code&gt;std::path&lt;/code&gt; and &lt;code&gt;theseus_path&lt;/code&gt; is that Theseus uses Rust &lt;code&gt;String&lt;/code&gt; and &lt;code&gt;str&lt;/code&gt; types natively, so there is no need for the equivalent types &lt;code&gt;OsString&lt;/code&gt; and &lt;code&gt;OsStr&lt;/code&gt;; these types become simple typedefs in Theseus:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;pub type OsString &#x3D; String;
+pub type OsStr &#x3D; str;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#relax-and-unwind&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;relax-and-unwind&quot;&gt;&lt;/a&gt;Relax and unwind&lt;/h4&gt;
+&lt;p&gt;The &lt;code&gt;resume_unwind()&lt;/code&gt; function is used in &lt;code&gt;wasmtime&lt;/code&gt; to carry on with the unwinding procedure after it has been &lt;em&gt;caught&lt;/em&gt;. This is currently only used in the runtime&#x27;s trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.&lt;/p&gt;
+&lt;p&gt;Here is Theseus&#x27;s &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/ca960df2a61d807f23514469a94355ee2689c556#diff-d17ff1523da38049c7e75df2747fc33e3a18dea8c6a57ecb1ba5590ff6f1a699&quot;&gt;implementation of &lt;code&gt;resume_unwind()&lt;/code&gt; with code that tests it&lt;/a&gt;.
+Although this is conceptually tricky, the implementation is quite straightforward — simply start unwinding from the current point without starting from the regular panic handler.
+You can test this in Theseus by invoking the test program &lt;code&gt;unwind_test -c&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To actually use our new &lt;code&gt;resume_unwind()&lt;/code&gt; function in &lt;code&gt;wasmtime-runtime&lt;/code&gt;, we add &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/blob/076a39724c76ad29423db5e4aae7ef1d15530693/crates/runtime/src/traphandlers.rs#L267-L272&quot;&gt;the following very simple code block&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;#[cfg(feature &#x3D; &amp;quot;std&amp;quot;)]
+std::panic::resume_unwind(panic);
+#[cfg(target_os &#x3D; &amp;quot;theseus&amp;quot;)]
+theseus_catch_unwind::resume_unwind(
+    KillReason::Panic(PanicInfoOwned::from_payload(panic))
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The notable difference between Theseus&#x27;s &lt;code&gt;resume_unwind&lt;/code&gt; and Rust&#x27;s &lt;code&gt;std::panic::resume_unwind&lt;/code&gt; is that we allow unwinding to occur from both a language-level panic and &lt;em&gt;beneath&lt;/em&gt; the language level after a CPU-level &amp;quot;machine&amp;quot; exception.
+Thus, Theseus&#x27;s panic payloads expect a &lt;a href&#x3D;&quot;&quot;&gt;&lt;code&gt;KillReason&lt;/code&gt;&lt;/a&gt; rather than an erased type &lt;code&gt;Box&amp;lt;Any&amp;gt;&lt;/code&gt;, so we must handle that minor difference.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#oh-an-error-occurred-anyway-anyhow&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;oh-an-error-occurred-anyway-anyhow&quot;&gt;&lt;/a&gt;Oh, an &lt;code&gt;Error&lt;/code&gt; Occurred? &lt;s&gt;Anyway&lt;/s&gt; Anyhow...&lt;/h4&gt;
+&lt;p&gt;In yet another tribute to D. Tolnay, &lt;code&gt;wasmtime&lt;/code&gt; uses his superb &lt;code&gt;anyhow&lt;/code&gt; and &lt;code&gt;thiserror&lt;/code&gt; crates for convenient error handling across nearly every source file and function.
+While &lt;code&gt;anyhow&lt;/code&gt; technically supports &lt;code&gt;no_std&lt;/code&gt; environments like Theseus, it cannot accommodate the same API.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Thus, we must change &lt;strong&gt;&lt;em&gt;every&lt;/em&gt;. &lt;em&gt;single&lt;/em&gt;. &lt;em&gt;usage&lt;/em&gt;.&lt;/strong&gt; of &lt;code&gt;anyhow&lt;/code&gt; in the whole &lt;code&gt;wasmtime&lt;/code&gt; code base.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The majority of the changes simply require use to add this snippet to any &lt;code&gt;Result&lt;/code&gt; type before returning or unwrapping it:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;.map_err(anyhow::Error::msg)?  // convert the &#x60;Err&#x60; into &#x60;anyhow::Error&#x60;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;because in &lt;code&gt;no_std&lt;/code&gt; environments, &lt;code&gt;anyhow::Error&lt;/code&gt; does not &lt;code&gt;impl std::error::Error&lt;/code&gt; and thus cannot perform the implicit conversion; we must do it explicitly.
+This rough edge is currently unavoidable, as evidenced by &lt;a href&#x3D;&quot;https://github.com/dtolnay/anyhow#no-std-support&quot;&gt;&lt;code&gt;anyhow&lt;/code&gt;&#x27;s documentation&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As you can see, most of these changes are functionally unnecessary. The real reason for such tedium is that the &lt;code&gt;Error&lt;/code&gt; trait is defined in Rust&#x27;s &lt;code&gt;std&lt;/code&gt; library and is thus unavailable for use in &lt;code&gt;no_std&lt;/code&gt; environments that only use &lt;code&gt;core&lt;/code&gt; or &lt;code&gt;alloc&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Thankfully, supporting &lt;code&gt;thiserror&lt;/code&gt; is a bit easier, thanks to the &lt;a href&#x3D;&quot;https://github.com/bbqsrc/thiserror-core2&quot;&gt;&lt;code&gt;thiserror_core2&lt;/code&gt; crate&lt;/a&gt; that ports it to emit a derivation of the &lt;a href&#x3D;&quot;https://github.com/technocreatives/core2&quot;&gt;&lt;code&gt;core2::error::Error&lt;/code&gt; trait&lt;/a&gt;. We can simply use this as a drop-in replacement for &lt;code&gt;thiserror&lt;/code&gt; because we already use &lt;code&gt;core2::error::Error&lt;/code&gt; as a substitute for &lt;code&gt;std::error::Error&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;💤💭💤 We dream of the day when &lt;a href&#x3D;&quot;https://github.com/yaahc&quot;&gt;@Jane Lusby&lt;/a&gt;&#x27;s excellent work on moving the &lt;code&gt;Error&lt;/code&gt; trait into &lt;code&gt;core&lt;/code&gt; is completed! Once that lands, we won&#x27;t need to bother with all this pablum.&lt;/p&gt;
+&lt;h4&gt;&lt;a href&#x3D;&quot;#the-last-jedi-dependency-signal-handling&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-last-jedi-dependency-signal-handling&quot;&gt;&lt;/a&gt;The Last &lt;s&gt;Jedi&lt;/s&gt; Dependency: Signal Handling&lt;/h4&gt;
+&lt;p&gt;The last remaining feature needed to finish porting &lt;code&gt;wasmtime-runtime&lt;/code&gt; is signal handling.
+This is needed for &lt;code&gt;wasmtime&lt;/code&gt; to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.&lt;/p&gt;
+&lt;p&gt;Theseus doesn&#x27;t offer POSIX-like signals because they&#x27;re unsafe and unnecessary in a safe-language OS, but it does implement handlers for &lt;a href&#x3D;&quot;https://wiki.osdev.org/Exceptions&quot;&gt;CPU exceptions&lt;/a&gt;, e.g., page faults, general protection faults, etc.
+However, we previously did not allow third-party crates to register handlers (callbacks)&lt;/p&gt;
+&lt;p&gt;Registering  &amp;quot;signal&amp;quot; (CPU exception) handlers is now supported in Theseus as of &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/09ccbfc644da93e98ef11c9532ef926f1ee7b4f4&quot;&gt;commit &lt;/a&gt;.
+The initial implementation is limited to the following four categories of &amp;quot;signals&amp;quot;, which was loosely based on the set of signals that &lt;code&gt;wasmtime-runtime&lt;/code&gt; cares about.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;/// The possible &amp;quot;signals&amp;quot; that may occur due to CPU exceptions.
+pub enum Exception {
+    /// (SIGSEGV) Bad virtual address, unexpected page fault.
+    InvalidAddress     &#x3D; 0,
+    /// (SIGILL) Invalid opcode, malformed instruction, etc.
+    IllegalInstruction &#x3D; 1,
+    /// (SIGBUS) Bad memory alignment, non-existent physical address.
+    BusError           &#x3D; 2,
+    /// (SIGFPE) Bad arithmetic operation, e.g., divide by zero.
+    ArithmeticError    &#x3D; 3,
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Each task can register one handler function for each category of exceptions:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;pub trait ExceptionHandler &#x3D; FnOnce(&amp;amp;ExceptionContext) -&amp;gt; Result&amp;lt;(), ()&amp;gt;;
+
+pub fn register_handler(
+    exception: Exception,
+    handler: Box&amp;lt;dyn ExceptionHandler&amp;gt;,
+) -&amp;gt; Result&amp;lt;(), ()&amp;gt; {
+    HANDLERS.with(|handlers| {
+        let handler_slot &#x3D; &amp;amp;handlers[exception as usize];
+        if handler_slot.borrow().is_some() {
+            return Err(());
+        }
+        *handler_slot.borrow_mut() &#x3D; Some(handler);
+        Ok(())
+    })
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and the Thread-Local Storage (TLS) areas are used to efficiently access the handlers registered for each given task:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;thread_local!{
+    /// The &amp;quot;signal&amp;quot; handlers registered for each task.
+    static HANDLERS: [RefCell&amp;lt;Option&amp;lt;Box&amp;lt;dyn ExceptionHandler&amp;gt;&amp;gt;&amp;gt;; 4] &#x3D; Default::default();
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When an exception occurs, the CPU jumps synchronously to the kernel function specified in the interrupt descriptor table (IDT).
+We simply &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/blob/13406ed975d54b5d72afb313df370d0a4477ce01/kernel/exceptions_full/src/lib.rs#L185-L200&quot;&gt;add a condition to each IDT exception function&lt;/a&gt; to check for and obtain the relevant registered exception handler (if one exists).
+The registered handler is then invoked with the following contextual information about said exception; the key information is the &lt;code&gt;instruction_pointer&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;/// Information that is passed to a registered [&#x60;ExceptionHandler&#x60;]
+/// about an exception that occurred during execution.
+pub struct ExceptionContext {
+    pub instruction_pointer: VirtualAddress,
+    pub stack_pointer: VirtualAddress,
+    pub exception: Exception,
+    pub error_code: Option&amp;lt;ErrorCode&amp;gt;,
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This feature is &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L40-L48&quot;&gt;used in the trap handling component&lt;/a&gt; of our port of &lt;code&gt;wasmtime-runtime&lt;/code&gt;, which needs the above context to determine whether the exception occurred in a section of code that came from a compiled WASM module.
+Of course, the handlers must first be registered as part of the &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L16-L26&quot;&gt;platform-specific init procedure shown here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#onwards-and-upwards&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;onwards-and-upwards&quot;&gt;&lt;/a&gt;Onwards and Upwards&lt;/h2&gt;
+&lt;p&gt;With that, our port of &lt;code&gt;wasmtime-runtime&lt;/code&gt; is complete!
+We&#x27;re nearly done with the &amp;quot;minimum viable port&amp;quot; of wasmtime functionality, as the only remaining crates are &lt;code&gt;wasmtime-jit&lt;/code&gt; and the top-level &lt;code&gt;wasmtime&lt;/code&gt; crate itself.
+Once those are complete, we will publish a longer-form post about the journey to get wasmtime running on Theseus.&lt;/p&gt;
+&lt;p&gt;Be on the lookout for such good news soon!&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#miscellaneous-contributions&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;miscellaneous-contributions&quot;&gt;&lt;/a&gt;Miscellaneous Contributions&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Fixed an &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/78d0e008f9b5b89a11fca388442f395cde040569&quot;&gt;issue with TLS sections&lt;/a&gt;, which required adding support for loading &lt;code&gt;.tbss&lt;/code&gt; (TLS BSS) sections&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/jacob-earle&quot;&gt;@Jacob Earle&lt;/a&gt; implemented a &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/23bcfce0eb4303cb21ea3ff38afba8ae04013eab&quot;&gt;rate-monotonic scheduler&lt;/a&gt; for pseudo-real-time task scheduling
+&lt;ul&gt;
+&lt;li&gt;Adds a &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/sleep/index.html&quot;&gt;&lt;code&gt;sleep&lt;/code&gt; crate&lt;/a&gt; that handles blocking a task for a given number of system ticks&lt;/li&gt;
+&lt;li&gt;Supports the notion of &amp;quot;periodic&amp;quot; tasks that run a short workload, go to sleep, and then wake back up at the beginning of every period&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/be9e9ed2c4a4baef45e321b2aa1fe50ea399218d&quot;&gt;Updated to the latest Rust 1.61 nightly version&lt;/a&gt;
+&lt;ul&gt;
+&lt;li&gt;This was required to fix the ABI issues in LLVM, wherein the &lt;code&gt;&amp;quot;x86-interrupt&amp;quot;&lt;/code&gt; ABI for exception handlers didn&#x27;t properly match what the CPU pushes onto the stack before jumping to said handler&lt;/li&gt;
+&lt;li&gt;Needed as part of &lt;a href&#x3D;&quot;#the-last-sjedis-dependency-signal-handling&quot;&gt;the aforementioned effort&lt;/a&gt; to support registering third-party &amp;quot;signal&amp;quot; (exception) handlers in Theseus&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Kevin contributed a &lt;a href&#x3D;&quot;https://github.com/rust-osdev/x86_64/pull/354&quot;&gt;tiny PR&lt;/a&gt; back to the &lt;code&gt;x86_64&lt;/code&gt; crate
+&lt;ul&gt;
+&lt;li&gt;We had been using our own outdated fork for a while, but we now use the &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/7d979328b3a6c2b59a29aa0b43d96f5997b36171&quot;&gt;latest version of the &lt;code&gt;x86_64&lt;/code&gt; crate&lt;/a&gt; with a tiny addition to support a &lt;code&gt;LockedIDT&lt;/code&gt; type.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;https://github.com/Ramla-I&quot;&gt;@Ramla Ijaz&lt;/a&gt; finished implementing &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/700daa0f959243c04e424c64649ca5660b5cb210&quot;&gt;packet tranmission for the Mellanox 100GiB NIC&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 </content>
 
         <author>
