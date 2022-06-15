@@ -138,19 +138,90 @@ Thankfully, supporting `thiserror` is a bit easier, thanks to the [`thiserror_co
 
 
 #### The Last <s>Jedi</s> Dependency: Signal Handling
-* Signal handling
-  * Required because `wasmtime` performs Just-In Time (JIT) compilation of WASM binaries into native code, so a failure or exception will translate into a native host exception, e.g., a SEGFAULT or the like.
 
+The last remaining feature needed to finish porting `wasmtime-runtime` is signal handling.
+This is needed for `wasmtime` to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.
 
+Theseus doesn't offer POSIX-like signals because they're unsafe and unnecessary in a safe-language OS, but it does implement handlers for [CPU exceptions](https://wiki.osdev.org/Exceptions), e.g., page faults, general protection faults, etc.
+However, we previously did not allow third-party crates to register handlers (callbacks) 
+
+Registering  "signal" (CPU exception) handlers is now supported in Theseus as of [commit ](https://github.com/theseus-os/Theseus/commit/09ccbfc644da93e98ef11c9532ef926f1ee7b4f4).
+The initial implementation is limited to the following four categories of "signals", which was loosely based on the set of signals that `wasmtime-runtime` cares about.
+```rust
+/// The possible "signals" that may occur due to CPU exceptions.
+pub enum Exception {
+    /// (SIGSEGV) Bad virtual address, unexpected page fault.
+    InvalidAddress     = 0,
+    /// (SIGILL) Invalid opcode, malformed instruction, etc.
+    IllegalInstruction = 1,
+    /// (SIGBUS) Bad memory alignment, non-existent physical address.
+    BusError           = 2,
+    /// (SIGFPE) Bad arithmetic operation, e.g., divide by zero.
+    ArithmeticError    = 3,
+}
+```
+
+Each task can register one handler function for each category of exceptions:
+```rust 
+pub trait ExceptionHandler = FnOnce(&ExceptionContext) -> Result<(), ()>;
+
+pub fn register_handler(
+    exception: Exception,
+    handler: Box<dyn ExceptionHandler>,
+) -> Result<(), ()> {
+    HANDLERS.with(|handlers| {
+        let handler_slot = &handlers[exception as usize];
+        if handler_slot.borrow().is_some() {
+            return Err(());
+        }
+        *handler_slot.borrow_mut() = Some(handler);
+        Ok(())
+    })
+}
+```
+
+and the Thread-Local Storage (TLS) areas are used to efficiently access the handlers registered for each given task:
+
+```rust
+thread_local!{
+    /// The "signal" handlers registered for each task.
+    static HANDLERS: [RefCell<Option<Box<dyn ExceptionHandler>>>; 4] = Default::default();
+}
+```
+
+When an exception occurs, the CPU jumps synchronously to the kernel function specified in the interrupt descriptor table (IDT).
+We simply [add a condition to each IDT exception function](https://github.com/theseus-os/Theseus/blob/13406ed975d54b5d72afb313df370d0a4477ce01/kernel/exceptions_full/src/lib.rs#L185-L200) to check for and obtain the relevant registered exception handler (if one exists).
+The registered handler is then invoked with the following contextual information about said exception; the key information is the `instruction_pointer`.
+```rust
+/// Information that is passed to a registered [`ExceptionHandler`]
+/// about an exception that occurred during execution.
+pub struct ExceptionContext {
+    pub instruction_pointer: VirtualAddress,
+    pub stack_pointer: VirtualAddress,
+    pub exception: Exception,
+    pub error_code: Option<ErrorCode>,
+}
+```
+
+This feature is [used in the trap handling component](https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L40-L48) of our port of `wasmtime-runtime`, which needs the above context to determine whether the exception occurred in a section of code that came from a compiled WASM module.
+Of course, the handlers must first be registered as part of the [platform-specific init procedure shown here](https://github.com/theseus-os/wasmtime/blob/e333d4441ad3bf634476e5b34e79fc3ff98f4fdb/crates/runtime/src/traphandlers/theseus.rs#L16-L26).
+
+## Onwards and Upwards
+
+With that, our port of `wasmtime-runtime` is complete!
+We're nearly done with the "minimum viable port" of wasmtime functionality, as the only remaining crates are `wasmtime-jit` and the top-level `wasmtime` crate itself.
+Once those are complete, we will publish a longer-form post about the journey to get wasmtime running on Theseus.
+
+Be on the lookout for such good news soon!
 
 ## Miscellaneous Contributions
-* Fixed issue with TLS sections, which required adding support for loading `.tbss` (TLS BSS) sections 
-* Jacob's rate monotonic scheduler for pseudo-realtime tasks
-  * Introduce a `sleep` crate that handles blocking a task for a given number of system ticks.
-  * Supports the notion of "periodic" tasks that run a short workload, go to sleep, and then wake back up at the beginning of every X-tick period.
-* Updated to the latest Rust 1.61 nightly version.
-  * Required to fix the ABI issues in LLVM, wherein the `"x86-interrupt"` ABI for exception handlers didn't properly match what the CPU pushes onto the stack before jumping to said handler.
-  * Needed as part of the effort to support registering third-party "signal" (exception) handlers in Theseus
-* Contributed a tiny PR back to the `x86_64` crate
-  * We had been using our own outdated fork of this library for a while, but I minimized Theseus's dependencies on it so we can now rely on it for only a small subset of features. This made it easier to upgrade to the latest version.
-* Ramla finished implementing packet tranmission for the Mellanox 100GiB NIC
+* Fixed an [issue with TLS sections](https://github.com/theseus-os/Theseus/commit/78d0e008f9b5b89a11fca388442f395cde040569), which required adding support for loading `.tbss` (TLS BSS) sections 
+* [@Jacob Earle](https://github.com/jacob-earle) implemented a [rate-monotonic scheduler](https://github.com/theseus-os/Theseus/commit/23bcfce0eb4303cb21ea3ff38afba8ae04013eab) for pseudo-real-time task scheduling
+  * Adds a [`sleep` crate](https://www.theseus-os.com/Theseus/doc/sleep/index.html) that handles blocking a task for a given number of system ticks
+  * Supports the notion of "periodic" tasks that run a short workload, go to sleep, and then wake back up at the beginning of every period
+* [Updated to the latest Rust 1.61 nightly version](https://github.com/theseus-os/Theseus/commit/be9e9ed2c4a4baef45e321b2aa1fe50ea399218d)
+  * This was required to fix the ABI issues in LLVM, wherein the `"x86-interrupt"` ABI for exception handlers didn't properly match what the CPU pushes onto the stack before jumping to said handler
+  * Needed as part of [the aforementioned effort](#the-last-sjedis-dependency-signal-handling) to support registering third-party "signal" (exception) handlers in Theseus
+* Kevin contributed a [tiny PR](https://github.com/rust-osdev/x86_64/pull/354) back to the `x86_64` crate
+  * We had been using our own outdated fork for a while, but we now use the [latest version of the `x86_64` crate](https://github.com/theseus-os/Theseus/commit/7d979328b3a6c2b59a29aa0b43d96f5997b36171) with a tiny addition to support a `LockedIDT` type.
+* [@Ramla Ijaz](https://github.com/Ramla-I) finished implementing [packet tranmission for the Mellanox 100GiB NIC](https://github.com/theseus-os/Theseus/commit/700daa0f959243c04e424c64649ca5660b5cb210)
