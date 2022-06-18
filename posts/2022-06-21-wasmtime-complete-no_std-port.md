@@ -40,20 +40,21 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 
 ## 1. Summary of `wasmtime`'s key parts
 
-TODO: finish diagram of wasmtime dependencies 
 
-NOTE: this diagram includes only the components of `wasmtime` and its dependencies that *do not already support `no_std`*. 
+NOTE: this diagram includes only the components of `wasmtime` and its dependencies that *did not already support `no_std`* when our work began. 
+
+TODO: fix actual dependency edges on this diagram of wasmtime dependencies 
 
 ```mermaid
 graph TD;
-    top(Top-level Application)
-    wasmtime
-    jit(wasmtime-jit)
-    runtime(wasmtime-runtime)
-    environ(wasmtime-environ)
-    types(wasmtime-types  <br> ported to true no_std)
+    top(Top-level CLI Application)
+    wasmtime("<tt>wasmtime</tt> <br> (Theseus-specific port)")
+    jit("<tt>wasmtime-jit</tt> <br> (Theseus-specific port)")
+    runtime("<tt>wasmtime-runtime</tt> <br> (Theseus-specific port)")
+    environ("<tt>wasmtime-environ</tt> <br> (Mostly <tt>no_std</tt>, needs <tt>Path</tt>)")
+    types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
 
-    parser(wasmparser <br> ported to true no_std)
+    parser("<tt>wasmparser</tt> <br> (true <tt>no_std</tt> port)")
     
 
     top --> wasmtime
@@ -63,9 +64,8 @@ graph TD;
     runtime --> jit
     runtime --> environ
     environ --> types
-    types --> wasmparser
+    types --> parser
 
-    wasmparser
 ```
 
 
