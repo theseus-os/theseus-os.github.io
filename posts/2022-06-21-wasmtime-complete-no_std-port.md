@@ -34,7 +34,7 @@ While we don't intend this to be a porting tutorial, we do hope it makes it easi
 
 "C'mon, just let me skip to the <s>recipe</s> code already!"
 
-No problem, [here is the full changeset to `wasmtime`](). Note that this doesn't include the many changes and extensions we made to Theseus to support this; those are described in the rest of the article. 
+No problem, [here is the full changeset to `wasmtime`](https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88). Note that this doesn't include the many changes and extensions we made to Theseus to support this; those are described in the rest of the article. 
 
 
 ## Summary of `wasmtime`'s key parts
