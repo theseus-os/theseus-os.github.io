@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/</uri>
     </author>
-    <updated>2022-06-15T18:52:39+00:00</updated>
+    <updated>2022-07-05T18:35:16+00:00</updated>
 
     
     <entry>
@@ -20,6 +20,9 @@
         <updated>2022-04-29T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/2022/04/29/Theseus-Is-Hiring.html</id>
         <content type="html" xml:base="https://theseus-os.github.io/2022/04/29/Theseus-Is-Hiring.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#theseus-is-looking-for-systems-programmers&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;theseus-is-looking-for-systems-programmers&quot;&gt;&lt;/a&gt;Theseus is looking for systems programmers!&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The hiring window has closed. Check back again later this year, we may be hiring again!&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;Theseus is proud to be a member of a diverse ecosystem of open-source Rust projects sponsored by Futurewei Technologies.
 Thanks to the generosity of Futurewei&#x27;s Rust initiative, Theseus is able to hire developers for the first time!&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;To apply, send your resume or C.V. to &lt;a href&#x3D;&quot;mailto:theseus.systems@gmail.com&quot;&gt;theseus.systems@gmail.com&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
