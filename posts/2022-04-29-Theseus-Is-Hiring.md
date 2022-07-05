@@ -8,6 +8,10 @@ release: false
 
 ## Theseus is looking for systems programmers!
 
+>
+> The hiring window has closed. Check back again later this year, we may be hiring again!
+>
+
 Theseus is proud to be a member of a diverse ecosystem of open-source Rust projects sponsored by Futurewei Technologies.
 Thanks to the generosity of Futurewei's Rust initiative, Theseus is able to hire developers for the first time!
 
