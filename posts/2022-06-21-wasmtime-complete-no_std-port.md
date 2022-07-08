@@ -14,6 +14,11 @@ The initial barebones version of `wasmtime` was [completed and successfully run 
 
 This milestone marks the culmination of a very long journey, as evidenced by our previous several posts on this topic 
 and the fact that our initial port started with a version of `wasmtime` from mid-October 2021. Yeesh!
+* [November 2021: Introducing the goal of running WASM on Theseus](../../../2021/11/01/October-Update-WASM.html)
+* [December 2021: Porting the low-level "simple" `wasmtime` crates and dependencies](../../../2021/12/31/November-December-Update-WASM.html#progress-on-porting-wasmtime-to-theseus)
+* [February 2022: Porting the largest crate, `wasmtime-runtime`, Part 1](../../../2022/02/03/wasmtime-progress-update.html)
+* [April 2022: Porting `wasmtime-runtime`, Part 2](../../../2022/04/12/wasmtime-progress-update-2.html)
+* This post: Porting the top-level `wasmtime` crate and tying everything together
 
 In this post, we aim to
 1. Provide a high-level description of `wasmtime` and its multi-crate architecture,
@@ -41,38 +46,148 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 ## 1. Summary of `wasmtime`'s key parts
 
 
-NOTE: this diagram includes only the components of `wasmtime` and its dependencies that *did not already support `no_std`* when our work began. 
+NOTE: this diagram includes only the important components of `wasmtime` and their dependencies, primarily those that *did not already support `no_std`* when our work began or required other forms of modification.
+This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 
-TODO: fix actual dependency edges on this diagram of wasmtime dependencies 
 
 ```mermaid
-graph TD;
-    top(Top-level CLI Application)
-    wasmtime("<tt>wasmtime</tt> <br> (Theseus-specific port)")
-    jit("<tt>wasmtime-jit</tt> <br> (Theseus-specific port)")
-    runtime("<tt>wasmtime-runtime</tt> <br> (Theseus-specific port)")
-    environ("<tt>wasmtime-environ</tt> <br> (Mostly <tt>no_std</tt>, needs <tt>Path</tt>)")
-    types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
+flowchart TB;
 
-    parser("<tt>wasmparser</tt> <br> (true <tt>no_std</tt> port)")
-    
+    top{"Top-level <br> Application"}
 
-    top --> wasmtime
-    wasmtime --> jit
+    top --> wasmtime    
+
+    subgraph wasmtime_components [ ] %% ["<tt>wasmtime</tt> components"]
+        wasmtime("<tt>wasmtime</tt> <br> (Theseus-specific port)")
+        jit("<tt>wasmtime-jit</tt> <br> (Theseus-specific port)")
+        runtime("<tt>wasmtime-runtime</tt> <br> (Theseus-specific port)")
+        environ("<tt>wasmtime-environ</tt> <br> (Mostly <tt>no_std</tt>, needs <tt>Path</tt>)")
+        types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
+        parser("<tt>wasmparser<sup>1</sup></tt> <br> (true <tt>no_std</tt> port)")
+    end
+
+    %%%% dependencies for wasmtime-jit
     wasmtime --> runtime
     wasmtime --> environ
-    runtime --> jit
+    wasmtime --> jit
+    wasmtime --> parser
+    wasmtime ---> memory
+    wasmtime ---> stack_trace
+    wasmtime ---> object_file
+    wasmtime ---> serialization
+    wasmtime ---> unwinding
+    wasmtime ---> file
+
+    %%%% dependencies for wasmtime-jit
+    jit --> environ
+    jit --> runtime
+    jit --> parser
+    jit ---> memory
+    jit ---> serialization
+    jit ---> symbolication
+    jit ---> object_file
+    %% jit ----> external_unwind_info %% this unnecessarily complicates the diagram
+
+    %%%% dependencies for wasmtime-runtime
     runtime --> environ
+    runtime ------> memory
+    runtime ------> signals
+    runtime ------> multitasking
+    runtime ------> unwinding
+    runtime ------> stack_trace
+    runtime ------> randomness
+    runtime ------> file
+    runtime ------> tls
+
+    %%%% dependencies for wasmtime-environ
     environ --> types
+    environ --> parser
+    environ --> serialization
+    environ --> object_file
+
+    %%%% dependencies for wasmtime-types
     types --> parser
+    types ---> serialization
+
+
+    subgraph platform [ ] %% [Platform-Specific Features]
+        memory[["Memory Management <br> <tt>alloc</tt> heap types, <br> <tt>mmap()</tt>, <tt>munmap()</tt>, etc"]]
+        unwinding[["Stack Unwinding <br> <tt>catch_unwind()</tt>, <br> <tt>resume_unwind()</tt>"]]
+        symbolication[["Symbolication <br> (à la <tt>addr2line</tt>)"]]
+        stack_trace[[Stack trace]]
+        signals[["Signal Handling"]]
+        object_file[["Read & write <br> object files"]]
+        tls[["Thread-Local Storage (TLS)"]]
+        file[["File read"]]
+        multitasking[["Multitasking"]]
+        randomness[["Randomness"]]
+        serialization[["(De)serialization"]]
+    end
+
+
+    subgraph third_party [ ]
+        libc(("<tt>libc</tt>"))
+        region(("<tt>region</tt>"))
+        backtrace(("<tt>backtrace</tt>"))
+        rand(("<tt>rand</tt> <br> (<tt>SmallRng</tt>)"))
+        object(("<tt>object</tt>, <br> <tt>gimli</tt>"))
+        serde(("<tt>serde</tt>, <br> <tt>bincode</tt>"))
+    end
+
+
+    backtrace ---> unwinder
+    object_file <-.- object
+    symbolication <-.- backtrace
+    randomness <-.- rand
+    stack_trace <-.- backtrace
+    serialization <-.- serde
+
+
+    subgraph theseus [ ]
+        heap{{"<tt>multi_heap</tt> <br> per-core <tt>slab</tt> heaps"}}
+        mapped_pages{{"<tt>memory::MappedPages</tt>"}}
+        unwinder{{"<tt>unwinder</tt>"}}
+        external_unwind_info{{"<tt>external_unwind_info</tt>"}}
+        exception_handler{{"<tt>exception_handler</tt>"}}
+        task{{<tt>task</tt>, <tt>spawn</tt>}}
+        thread_local{{<tt>thread_local</tt>}}
+        theseus_fs{{<tt>theseus_fs</tt>}}
+    end
+
+    unwinding <-..- external_unwind_info
+    unwinding <-..- unwinder
+    memory <-..- mapped_pages
+    memory <-..- libc
+    memory <-..- region
+    memory <-..- heap
+
+    libc --> mapped_pages
+    region --> mapped_pages
+
+    signals <-..- exception_handler
+    multitasking <-..- task
+    tls <-..- thread_local
+    tls <-..- task
+    file <-..- theseus_fs
 
 ```
 
+[^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
 
 We took a bottom-up approach to iteratively port lower-level dependencies until they built on Theseus, and then moved on to the next highest layer in the dependency stack. 
 
 By far, the most complex crate to port was `wasmtime-runtime`, which not only has myriad dependencies that each needed porting, but also much platform-specific code that is necessarily unsafe and quite intricate. 
 
+
+## 2. Changes made to `wasmtime` components
+Many changes are trivial and thus omitted from this discussion, such as changing import statements 
+
+* Error handling, particularly usage of `anyhow`
+  * Primarily mapping the error type via `.map_err(anyhow::Error::msg)`.
+* Substituted `no_std` versions of specific crate
+  * `std::io` --> `core2::io`
+  * `thiserror` --> `thiserror_core2`
+* Required some minor changes to how `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md) to the newest version that supports `no_std`
 
 
 ## 3. Functionality needed to fulfill wasmtime's dependencies
@@ -117,10 +232,13 @@ By far, the most complex crate to port was `wasmtime-runtime`, which not only ha
   * We contributed a PR to make this compile properly for custom targets
 * A source of randomness
   * Easiest course of action is to use `rand`'s `SmallRng` in `no_std`
-* Basic I/O, e.g., for printing to `stdout` or a log
+* Basic I/O, e.g., for printing to the screen, console, or a log
 
 ### Picking up where we left off
-In our [prior post](2022/04/12/wasmtime-progress-update-2.html), we had completed
+In our [prior post](2022/04/12/wasmtime-progress-update-2.html), we had completed all crates from the bottom up to and including `wasmtime-runtime`.
+The remaining components that we completed from mid-April through mid-May were `wasmtime-jit` and the top-level `wasmtime` crate itself.
+
+
 
 ## Concluding remarks + next steps
 

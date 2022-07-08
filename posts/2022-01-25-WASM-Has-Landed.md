@@ -11,7 +11,7 @@ release: false
 
 With [PR #472](https://github.com/theseus-os/Theseus/commit/f4aa715f0fc706a0e3b0f3f21057338c0b295ffb) being merged in, Theseus's main branch allows you to execute WASM modules (as precompiled WASM binaries) that use both the core WASM specification and basic WASI extensions. 
 
-See our [previous blog post](2021-12-31-November-December-Update-WASM.md) for more about this effort. 
+See our [previous blog post](../../../2021/12/31/November-December-Update-WASM.html) for more about this effort. 
 
 ### How to use and run WASM on Theseus
 

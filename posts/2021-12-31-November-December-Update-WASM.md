@@ -9,7 +9,7 @@ release: false
 
 Great news -- executing WASM modules atop Theseus is now working! 
 
-As proposed in a [previous post](2021-11-01-October-Update-WASM.md), the initial implementation covers basic WASI system calls and uses the `wasmi` crate to execute WASM binaries using an intepreter.
+As proposed in a [previous post](../../../2021/11/01/October-Update-WASM.html), the initial implementation covers basic WASI system calls and uses the `wasmi` crate to execute WASM binaries using an intepreter.
 
 Big thanks to [Vikram Mullick](https://github.com/vikrammullick) for leading this effort. Our initial work was also inspired by early work from [redshirt](https://github.com/tomaka/redshirt), a WASM-based proof-of-concept system that also used `wasmi`.
 
