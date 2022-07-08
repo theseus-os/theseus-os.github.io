@@ -27,14 +27,13 @@ In this post, we aim to
 
 While we don't intend this to be a porting tutorial, we do hope it makes it easier to port and run `wasmtime` on other platforms in the future. 
 
-> Why is there an asterisk by `no_std`? 
+> **Why is there an asterisk** by `no_std`? 
 > 
 > Theseus doesn't yet support the `std` library, so this is a legitimate `no_std` port.
 > However, one cannot simply take this port and run it within any other `no_std` environment,
 > because `wasmtime` still relies on basic functionality from the underlying platform.
 > 
-> We did have to add limited `std`-like components to Theseus in order to support `wasmtime`'s needs;
-> we discuss which components were needed in the following sections. 
+> We did have to add some `std`-like components to Theseus in order to satisfy `wasmtime`'s needs, as shown below.
 
 
 "C'mon, just skip to the <s>recipe</s> code already!"
@@ -45,8 +44,7 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 
 ## 1. Summary of `wasmtime`'s key parts
 
-
-NOTE: this diagram includes only the important components of `wasmtime`[^1] and their dependencies, primarily those that *did not already support `no_std`* when our work began or required other forms of modification.
+The diagram below shows the major components of `wasmtime`[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 
 
@@ -174,20 +172,83 @@ flowchart TB;
 
 [^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
 
-We took a bottom-up approach to iteratively port lower-level dependencies until they built on Theseus, and then moved on to the next highest layer in the dependency stack. 
+We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on `no_std` on Theseus, and then moved on to the next highest layer in the dependency stack. 
+The lowest-level crates, `wasmparser`, `wasmtime-types`, and `wasmtime-environ` were relatively simple to port to `no_std`.
 
-By far, the most complex crate to port was `wasmtime-runtime`, which not only has myriad dependencies that each needed porting, but also much platform-specific code that is necessarily unsafe and quite intricate. 
+By far, the most complex crate to port is `wasmtime-runtime`, which not only has myriad dependencies that each needed porting, but also plenty of platform-specific code that is necessarily unsafe and quite intricate. 
+We have already described our efforts to port `wasmtime-runtime` to Theseus in [two previous posts starting here](../../../2022/02/03/wasmtime-progress-update.html).
+
+
+TODO: below
+
+After `wasmtime-runtime` TODO, describe how the bulk of the work was done when porting `wasmtime-runtime` to Theseus, so once that's done the rest of the higher-level `wasmtime` components aren't terribly difficult to complete.
+
+The real fun begins once you can finally compile all `wasmtime` crates on your platform and then attempt to run it
 
 
 ## 2. Changes made to `wasmtime` components
-Many changes are trivial and thus omitted from this discussion, such as changing import statements 
+
+### Significant logic or structural changes
+
+TODO start
+
+
+### Minor changes 
+
+TODO finish
 
 * Error handling, particularly usage of `anyhow`
   * Primarily mapping the error type via `.map_err(anyhow::Error::msg)`.
-* Substituted `no_std` versions of specific crate
-  * `std::io` --> `core2::io`
-  * `thiserror` --> `thiserror_core2`
+* Substituted `no_std` versions of specific crates
+  * `std::io` → `core2::io`
+  * `thiserror` → `thiserror_core2`
 * Required some minor changes to how `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md) to the newest version that supports `no_std`
+
+
+
+### Trivial yet **tedious** changes for `no_std` compatibility
+Many changes are trivial and thus glossed over in this post, such as changing import statements from `std::xyz` to `core::xyz` or `alloc::xyz` and modifying or patching dependency chains to disable `default-features`.
+However, I don't want to understate the pure tedium of such changes because they require a lot of effort for no actual difference in functionality.
+Many of the code diffs look like the collage of boring tedium below:
+```patch
+- use std::borrow::Borrow;
+- use std::marker::PhantomData;
+- use std::mem;
++ use core::borrow::Borrow;
++ use core::marker::PhantomData;
++ use core::mem;
+```
+
+```patch
+[dependencies]
+- anyhow = "1.0"
++ anyhow = { version = "1.0", default-features = false }
+  cranelift-entity = { path = "../../cranelift/entity", version = "0.77.0" }
+- wasmtime-types = { path = "../types", version = "0.30.0" }
++ wasmtime-types = { path = "../types", default-features = false, version = "0.30.0" }
+- wasmparser = "0.81"
++ wasmparser = { version = "0.81", default-features = false }
+  indexmap = { version = "1.0.2", features = ["serde-1"] }
+- thiserror = "1.0.4"
++ thiserror = { version = "1.0.4", optional = true }
+- serde = { version = "1.0.94", features = ["derive"] }
++ serde = { version = "1.0.94", default-features = false, features = ["derive"] }
+  object = { version = "0.27", default-features = false, features = ['read_core', 'write_core', 'elf'] }
++ hashbrown = { version = "0.11.2", features = ["ahash"], default-features = false }
+  ...
+
++ [patch.crates-io]
++ wasmparser = { path = "./path/to/ported/wasmparser/crate" }
++ object = { path = "./path/to/ported/object/crate" }
+```
+
+... and the procedure to patch dependencies that have been ported to `no_std` is even more tedious, shown below:
+![porting_dependencies_to_no_std](/images/2022-posts/porting_deps_to_no_std.svg)
+
+
+It would be a ***fantastic*** quality-of-life improvement if `std`'s re-exports of items from `core` and `alloc` could be transparently converted to their `no_std` equivalents, but that's a topic for another day.
+In fact I've already suggested this in a presentation to select Rust team members entitled ["How Theseus uses Rust, plus Rust challenges", slides 47-51](https://www.theseus-os.com/Theseus/book/misc/papers_presentations.html#selected-presentations-and-slide-decks).
+
 
 
 ## 3. Functionality needed to fulfill wasmtime's dependencies
