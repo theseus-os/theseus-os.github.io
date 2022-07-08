@@ -46,7 +46,7 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 ## 1. Summary of `wasmtime`'s key parts
 
 
-NOTE: this diagram includes only the important components of `wasmtime` and their dependencies, primarily those that *did not already support `no_std`* when our work began or required other forms of modification.
+NOTE: this diagram includes only the important components of `wasmtime`[^1] and their dependencies, primarily those that *did not already support `no_std`* when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 
 
