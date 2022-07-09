@@ -9,8 +9,8 @@ release: false
 
 🎉🎉 `wasmtime` now builds and runs on Theseus! 🎉🎉
 
-This is the first port of `wasmtime` to a `no_std`* environment, to the best of our knowledge. 
-The initial barebones version of `wasmtime` was [completed and successfully run on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
+This is the first port of `wasmtime` to a `no_std`* environment, to the best of our knowledge, despite it being a [very](https://github.com/bytecodealliance/wasmtime/issues/75) [hot](https://github.com/bytecodealliance/wasmtime/pull/2024) [topic](https://github.com/bytecodealliance/wasmtime/pull/554) [of](https://github.com/bytecodealliance/wasmtime/issues/3495) [conversation](https://github.com/bytecodealliance/wasmtime/issues/3451).
+We completed the initial minimal version of `wasmtime` and [successfully ran it on Theseus on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
 
 This milestone marks the culmination of a very long journey, as evidenced by our previous several posts on this topic 
 and the fact that our initial port started with a version of `wasmtime` from mid-October 2021. Yeesh!
@@ -31,7 +31,7 @@ While we don't intend this to be a porting tutorial, we do hope it makes it easi
 > 
 > Theseus doesn't yet support the `std` library, so this is a legitimate `no_std` port.
 > However, one cannot simply take this port and run it within any other `no_std` environment,
-> because `wasmtime` still relies on basic functionality from the underlying platform.
+> because `wasmtime` still relies on lots of functionality from the underlying platform.
 > 
 > We did have to add some `std`-like components to Theseus in order to satisfy `wasmtime`'s needs, as shown below.
 
@@ -172,25 +172,70 @@ flowchart TB;
 
 [^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
 
-We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on `no_std` on Theseus, and then moved on to the next highest layer in the dependency stack. 
-The lowest-level crates, `wasmparser`, `wasmtime-types`, and `wasmtime-environ` were relatively simple to port to `no_std`.
-
-By far, the most complex crate to port is `wasmtime-runtime`, which not only has myriad dependencies that each needed porting, but also plenty of platform-specific code that is necessarily unsafe and quite intricate. 
-We have already described our efforts to port `wasmtime-runtime` to Theseus in [two previous posts starting here](../../../2022/02/03/wasmtime-progress-update.html).
-
-
-TODO: below
-
-After `wasmtime-runtime` TODO, describe how the bulk of the work was done when porting `wasmtime-runtime` to Theseus, so once that's done the rest of the higher-level `wasmtime` components aren't terribly difficult to complete.
-
-The real fun begins once you can finally compile all `wasmtime` crates on your platform and then attempt to run it
-
 
 ## 2. Changes made to `wasmtime` components
 
-### Significant logic or structural changes
+We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on `no_std` on Theseus, and then moved on to the next highest layer in the dependency stack. 
+The lowest-level crates, `wasmparser`, `wasmtime-types`, and `wasmtime-environ` were relatively simple to port to `no_std`, requiring only trivial changes [described in the section below](#trivial-yet-tedious-changes-for-nostd-compatibility).
 
-TODO start
+By far, the most complex crate to port was `wasmtime-runtime`, which has not only myriad dependencies that each need porting, but also plenty of platform-specific code that is necessarily unsafe and quite intricate. 
+We have already described our efforts to port `wasmtime-runtime` to Theseus in [two previous posts starting here](../../../2022/02/03/wasmtime-progress-update.html).
+
+Moving up, porting `wasmtime-jit` and then `wasmtime` was fairly straightforward once `wasmtime-runtime` was done, as they share many dependencies.
+There were a few issues that needed fixing, as described below, but nothing strenuous.
+
+Finally, the real fun begins once all `wasmtime` crates are able to be compiled for your platform! 
+You then attempt to run it for the first time only to discover that nothing works and you don't know why.
+
+Welcome to integration hell! 😈
+
+... Ok, time to come clean; it turns out that this wasn't so bad. We only had a few days of debugging struggles that centered around differences in how `bincode` performs (de)serialization across different versions and how `region` handles memory management on Unix vs. Theseus. Both are explained in the following sections.
+
+### Logic and structural changes
+
+As `wasmtime` is cross-platform, it contains several platform-specific modules that we must implement for Theseus. 
+These typically look something like:
+```rust
+if #[cfg(unix)] {
+    mod systemv;
+    pub use self::systemv::*;
+} else if #[cfg(target_os = "theseus")] {
+    mod theseus;
+    pub use self::theseus::*;  
+} else ...
+```
+[Here's an example of one such module](<https://github.com/theseus-os/wasmtime/blob/7879420c3c75a8514c0137928d998ef29f04b22d/crates/jit/src/unwind/theseus.rs>) in `wasmtime-jit` that handles registering unwind info for new code regions that were JIT-compiled from WASM modules.
+
+Beyond these modules, we have encountered only a few places in which platform-agnostic code must be modified to support Theseus. Two such examples are:
+* The aforementioned registration of unwind info:
+  ```rust
+  UnwindRegistration::new(
+      text.as_ptr(),
+      #[cfg(target_os = "theseus")]
+      text.len(), // Theseus needs the text section's length
+      unwind_info.as_ptr(),
+      unwind_info.len(),
+  )
+  ```
+  * Here, Theseus's unwinder benefits from knowing both the starting *and* ending bounds of the `.text` section(s) that a given piece of unwind info covers; it helps accelerate the search for the unwind info that corresponds to a given stack frame's caller virtual address.
+  * This stems from Theseus's structure of many small crate object files all being loaded and linked at runtime, which results in many separate `.eh_frame` sections that each contain unwind info for different `.text` section address ranges.
+
+* The representation of memory-mapped region in `wasmtime-runtime`:
+  ```rust
+  pub struct Mmap {
+      ptr: usize,
+      len: usize,
+      file: Option<File>,
+      #[cfg(target_os = "theseus")]
+      theseus_mp: theseus_memory::MappedPages,
+  }
+  ```
+  * A [Theseus-specific version of `Mmap::accessible_reserved()`](https://github.com/theseus-os/wasmtime/blob/c05b37c41b363008b9ff84b3493ea6d4f067cf88/crates/runtime/src/mmap.rs#L172-L196) and other related functions was also necessary to accommodate the changed `Mmap` struct.
+  * This design choice avoids unsafe or leaky code that would be required to get around the [ownership-based type invariants guaranteed by `MappedPages`](https://www.theseus-os.com/Theseus/doc/memory/struct.MappedPages.html).
+
+
+Naturally, we made many other changes, but those were generally much smaller in scope and described in following separate sections.
+The inquisitive reader can search [the full list of changes](https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88) for `target_os = "theseus to see other platform-specific modifications.
 
 
 ### Minor changes 
@@ -202,7 +247,12 @@ TODO finish
 * Substituted `no_std` versions of specific crates
   * `std::io` → `core2::io`
   * `thiserror` → `thiserror_core2`
-* Required some minor changes to how `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md) to the newest version that supports `no_std`
+* How `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md) to version 2.0 that supports `no_std`, e.g., 
+  ```diff
+  - bincode::deserialize(...)
+  + bincode::serde::decode_from_slice(..., bincode::config::legacy())
+  ```
+  * Also, be sure to use the same versions of all types when you serialize and deserialize things... otherwise you'll get those lovely mysterious errors and spend a whole two days trying to figure out which struct field is causing the problem. 🙄
 
 
 
@@ -251,19 +301,19 @@ In fact I've already suggested this in a presentation to select Rust team member
 
 
 
-## 3. Functionality needed to fulfill wasmtime's dependencies
+## 3. Full list of functionality needed to support `wasmtime`
 * Heap allocation for `alloc` types
   * Sorry, you ain't gonna run `wasmtime` without a heap!
 * Stack unwinding for proper panic handling and ensuring drop handlers run
-  * `wasmtime-runtime` requires both `catch_unwind` and `resume_unwind`
-  * Also need to support registration of external unwind info that comes from WASM modules that were JIT-compiled into native code. This must allow Theseus's (or your platform's) unwinding routine to use it.
+  * `wasmtime-runtime` requires both [`catch_unwind()`](https://doc.rust-lang.org/std/panic/fn.catch_unwind.html) and [`resume_unwind()`](https://doc.rust-lang.org/std/panic/fn.resume_unwind.html)
+  * Also need to support registration of external unwind info that comes from WASM modules compiled into native code, plus an unwinder that can utilize this info
 * `backtrace` for capturing a stack trace
-  * Plus optional symbolication of addresses, i.e., `addr2line` functionality
-* memory management: allocating memory regions, creating memory mappings, etc.
-  * Uses crates like `libc`, `region`, `rsix` for Unixes
-  * We had to slightly modify `wasmtime-runtime`'s structs for memory-mapped WASM modules and files to include an owned Theseus `MappedPages` instance
+  * Plus optional symbolication of addresses, i.e., `addr2line` functionality or similar
+* Basic memory management: allocating memory regions, creating memory mappings, etc.
+  * Uses crates like `libc`, `region`, `rsix` for Unix-like OSes
+  <!-- * We had to slightly modify `wasmtime-runtime`'s structs for memory-mapped WASM modules and files to include an owned Theseus `MappedPages` instance -->
 * Mutual Exclusion
-  * We do use THeseus's own sleeping `Mutex` type, but this is also easily provided by crates like `spin`
+  * We do use Theseus's own sleeping `Mutex` type, but this is also easily provided by crates like `spin`
 * signal handling for traps
   * On Theseus, this means handling CPU exceptions
 * `object` for object file editing
@@ -295,11 +345,12 @@ In fact I've already suggested this in a presentation to select Rust team member
   * Easiest course of action is to use `rand`'s `SmallRng` in `no_std`
 * Basic I/O, e.g., for printing to the screen, console, or a log
 
-### Picking up where we left off
-In our [prior post](2022/04/12/wasmtime-progress-update-2.html), we had completed all crates from the bottom up to and including `wasmtime-runtime`.
-The remaining components that we completed from mid-April through mid-May were `wasmtime-jit` and the top-level `wasmtime` crate itself.
-
 
 
 ## Concluding remarks + next steps
 
+TODO: insert a screenshot, the basic WASM module code, and the code on the host that runs it.
+
+TODO: mention fleshing out the rest of `wasmtime` and supporting optional features.
+
+TODO: mention proposing design changes to `wasmtime` such that it uses traits to abstract away its platform-specific dependencies as much as possible.
