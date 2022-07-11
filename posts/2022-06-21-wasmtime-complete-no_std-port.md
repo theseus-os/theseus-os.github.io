@@ -64,12 +64,12 @@ Note that the project also contains many other crates that realize optional feat
 
 TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.
 
-<div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
 
 <a href="/images/2022-posts/wasmtime_diagram.svg" alt="Wasmtime architecture diagram with dependencies" target="_blank">
   <img align="center" src="/images/2022-posts/wasmtime_diagram.svg"/>
 </a>
 
+<div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
 
 [^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
 
@@ -131,7 +131,7 @@ Beyond these modules, we have encountered only a few places in which platform-ag
       theseus_mp: theseus_memory::MappedPages,
   }
   ```
-  * A [Theseus-specific version of `Mmap::accessible_reserved()`](https://github.com/theseus-os/wasmtime/blob/c05b37c41b363008b9ff84b3493ea6d4f067cf88/crates/runtime/src/mmap.rs#L172-L196) and other related functions was also necessary to accommodate the changed `Mmap` struct.
+  * A [Theseus-specific version of `Mmap::accessible_reserved()`](https://github.com/theseus-os/wasmtime/blob/c05b37c41b363008b9ff84b3493ea6d4f067cf88/crates/runtime/src/mmap.rs#L172-L196) and other related functions were also necessary to accommodate the changed `Mmap` struct.
   * This design choice avoids unsafe or leaky code that would be required to get around the [ownership-based type invariants guaranteed by `MappedPages`](https://www.theseus-os.com/Theseus/doc/memory/struct.MappedPages.html).
 
 
