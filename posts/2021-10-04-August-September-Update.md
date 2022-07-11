@@ -6,7 +6,7 @@ release: false
 ---
 
 
-As mentioned in our [previous update](./2021-08-02-June-July-2021-Update.md), we're working to support headless operation in Theseus such that it can run in an seL4 guest VM, which doesn't support graphical displays.
+As mentioned in our [previous update](../../../2021/08/02/June-July-2021-Update.html), we're working to support headless operation in Theseus such that it can run in an seL4 guest VM, which doesn't support graphical displays.
 
 ## Going Headless with a Proper Terminal Interface
 

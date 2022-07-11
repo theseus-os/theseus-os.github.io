@@ -1,0 +1,120 @@
+flowchart TB;
+
+    top("Top-level application <br> e.g., <tt>wasmtime-cli</tt>")
+
+    top --> wasmtime    
+
+    subgraph wasmtime_components [ ] %% ["<tt>wasmtime</tt> components"]
+        wasmtime("<tt>wasmtime</tt> <br> (Theseus-specific port)")
+        jit("<tt>wasmtime-jit</tt> <br> (Theseus-specific port)")
+        runtime("<tt>wasmtime-runtime</tt> <br> (Theseus-specific port)")
+        environ("<tt>wasmtime-environ</tt> <br> (mostly <tt>no_std</tt>, needs <tt>Path</tt>)")
+        types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
+        parser("<tt>wasmparser<sup>1</sup></tt> <br> (true <tt>no_std</tt> port)")
+    end
+
+    %%%% dependencies for wasmtime-jit
+    wasmtime --> runtime
+    wasmtime --> environ
+    wasmtime --> jit
+    wasmtime --> parser
+    wasmtime ---> memory
+    wasmtime ---> stack_trace
+    wasmtime ---> object_file
+    wasmtime ---> serialization
+    wasmtime ---> unwinding
+    wasmtime ---> file
+
+    %%%% dependencies for wasmtime-jit
+    jit --> environ
+    jit --> runtime
+    jit --> parser
+    jit ---> memory
+    jit ---> serialization
+    jit ---> symbolication
+    jit ---> object_file
+    %% jit ----> external_unwind_info %% this unnecessarily complicates the diagram
+
+    %%%% dependencies for wasmtime-runtime
+    runtime --> environ
+    runtime ------> memory
+    runtime ------> signals
+    runtime ------> multitasking
+    runtime ------> unwinding
+    runtime ------> stack_trace
+    runtime ------> randomness
+    runtime ------> file
+    runtime ------> tls
+
+    %%%% dependencies for wasmtime-environ
+    environ --> types
+    environ --> parser
+    environ --> serialization
+    environ --> object_file
+
+    %%%% dependencies for wasmtime-types
+    types --> parser
+    types ---> serialization
+
+
+    subgraph platform [ ] %% [Platform-Specific Features]
+        memory[["Memory Management <br> <tt>alloc</tt> heap types, <br> <tt>mmap()</tt>, <tt>munmap()</tt>, etc"]]
+        unwinding[["Stack Unwinding <br> <tt>catch_unwind()</tt>, <br> <tt>resume_unwind()</tt>"]]
+        symbolication[["Symbolication <br> (à la <tt>addr2line</tt>)"]]
+        stack_trace[[Stack trace]]
+        signals[["Signal Handling"]]
+        object_file[["Read & write <br> object files"]]
+        tls[["Thread-Local Storage (TLS)"]]
+        file[["File read"]]
+        multitasking[["Multitasking"]]
+        randomness[["Randomness"]]
+        serialization[["(De)serialization"]]
+    end
+
+
+    subgraph third_party [ ]
+        libc(("<tt>libc</tt>"))
+        region(("<tt>region</tt>"))
+        backtrace(("<tt>backtrace</tt>"))
+        rand(("<tt>rand</tt> <br> (<tt>SmallRng</tt>)"))
+        object(("<tt>object</tt>, <br> <tt>gimli</tt>"))
+        serde(("<tt>serde</tt>, <br> <tt>bincode</tt>"))
+    end
+
+
+    backtrace ---> unwinder
+    object_file <-.- object
+    symbolication <-.- backtrace
+    randomness <-.- rand
+    stack_trace <-.- backtrace
+    serialization <-.- serde
+
+
+    subgraph theseus [ ]
+        heap{{"<tt>multi_heap</tt> <br> per-core <tt>slab</tt> heaps"}}
+        mapped_pages{{"<tt>memory::MappedPages</tt>"}}
+        unwinder{{"<tt>unwinder</tt>"}}
+        external_unwind_info{{"<tt>external_unwind_info</tt>"}}
+        exception_handler{{"<tt>exception_handler</tt>"}}
+        task{{<tt>task</tt>, <tt>spawn</tt>}}
+        thread_local{{<tt>thread_local</tt>}}
+        theseus_fs{{<tt>theseus_fs</tt>}}
+    end
+
+    unwinding <-..- external_unwind_info
+    unwinding <-..- unwinder
+    memory <-..- mapped_pages
+    memory <-..- libc
+    memory <-..- region
+    memory <-..- heap
+
+    libc --> mapped_pages
+    region --> mapped_pages
+
+    signals <-..- exception_handler
+    multitasking <-..- task
+    tls <-..- thread_local
+    tls <-..- task
+    file <-..- theseus_fs
+
+

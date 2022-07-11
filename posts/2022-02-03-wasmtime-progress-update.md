@@ -7,7 +7,7 @@ release: false
 
 
 ## Porting `wasmtime-runtime`, the key `wasmtime` crate
-A [previous post from late 2021](2021-12-31-November-December-Update-WASM.md) chronicled our ongoing journey to port `wasmtime` to Theseus. 
+A [previous post from late 2021](../../../2021/12/31/November-December-Update-WASM.html) chronicled our ongoing journey to port `wasmtime` to Theseus. 
 While our bottom-up approach got off to a strong start, we quickly encountered our first major challenge when examining the `wasmtime-runtime` crate, as it contains many dependencies on platform-specific and legacy system interfaces:
 * Unix-like memory mapping and protection
 * Signal/trap handling 
