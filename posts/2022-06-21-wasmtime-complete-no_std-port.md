@@ -10,7 +10,7 @@ release: false
 🎉🎉 `wasmtime` now builds and runs on Theseus! 🎉🎉
 
 This is the first port of `wasmtime` to a `no_std`* environment, to the best of our knowledge, despite it being a [very](https://github.com/bytecodealliance/wasmtime/issues/75) [hot](https://github.com/bytecodealliance/wasmtime/pull/2024) [topic](https://github.com/bytecodealliance/wasmtime/pull/554) [of](https://github.com/bytecodealliance/wasmtime/issues/3495) [conversation](https://github.com/bytecodealliance/wasmtime/issues/3451).
-We completed the initial minimal version of `wasmtime` and [successfully ran it on Theseus on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
+We completed the initial minimal version of `wasmtime` and [successfully ran it on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
 
 This milestone marks the culmination of a very long journey, as evidenced by our previous several posts on this topic 
 and the fact that our initial port started with a version of `wasmtime` from mid-October 2021. Yeesh!
@@ -25,7 +25,7 @@ In this post, we aim to
 2. Enumerate the changes needed to build `wasmtime` on `no_std`*, and
 3. Itemize the dependencies/functionality that `wasmtime` requires from the underlying platform.
 
-While we don't intend this to be a porting tutorial, we do hope it makes it easier to port and run `wasmtime` on other platforms in the future. 
+While we don't intend this to be a step-by-step porting tutorial, we do hope it makes it easier to port and run `wasmtime` on other platforms in the future. 
 
 > **Why is there an asterisk** by `no_std`? 
 > 
@@ -44,8 +44,12 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 
 ## 1. Summary of `wasmtime`'s key parts
 
-The diagram below shows the major components of `wasmtime`[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
+The diagram below depicts the above major components of `wasmtime`[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
+Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and `wasmtime-cli`) aren't necessary for an initial port. 
+
+
+TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.
 
 
 ```mermaid
@@ -238,26 +242,9 @@ Naturally, we made many other changes, but those were generally much smaller in 
 The inquisitive reader can search [the full list of changes](https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88) for `target_os = "theseus to see other platform-specific modifications.
 
 
-### Minor changes 
+### Minor yet **tedious** changes for `no_std` compatibility
 
-TODO finish
-
-* Error handling, particularly usage of `anyhow`
-  * Primarily mapping the error type via `.map_err(anyhow::Error::msg)`.
-* Substituted `no_std` versions of specific crates
-  * `std::io` → `core2::io`
-  * `thiserror` → `thiserror_core2`
-* How `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md) to version 2.0 that supports `no_std`, e.g., 
-  ```diff
-  - bincode::deserialize(...)
-  + bincode::serde::decode_from_slice(..., bincode::config::legacy())
-  ```
-  * Also, be sure to use the same versions of all types when you serialize and deserialize things... otherwise you'll get those lovely mysterious errors and spend a whole two days trying to figure out which struct field is causing the problem. 🙄
-
-
-
-### Trivial yet **tedious** changes for `no_std` compatibility
-Many changes are trivial and thus glossed over in this post, such as changing import statements from `std::xyz` to `core::xyz` or `alloc::xyz` and modifying or patching dependency chains to disable `default-features`.
+Many other changes are trivial and thus glossed over in this post, such as changing import statements from `std::xyz` to `core::xyz` or `alloc::xyz` and modifying or patching dependency chains to disable `default-features`.
 However, I don't want to understate the pure tedium of such changes because they require a lot of effort for no actual difference in functionality.
 Many of the code diffs look like the collage of boring tedium below:
 ```patch
@@ -300,6 +287,21 @@ It would be a ***fantastic*** quality-of-life improvement if `std`'s re-exports 
 In fact I've already suggested this in a presentation to select Rust team members entitled ["How Theseus uses Rust, plus Rust challenges", slides 47-51](https://www.theseus-os.com/Theseus/book/misc/papers_presentations.html#selected-presentations-and-slide-decks).
 
 
+Here are a few specific examples of changes that were conceptually minor yet tricky or tedious:
+* Error handling, particularly usage of `anyhow`
+  * This boils down to error type mapping: `.map_err(anyhow::Error::msg)`.
+* Substituting `no_std` versions of specific crates
+  * `std::io` → `core2::io`
+  * `thiserror` → `thiserror_core2`
+* Using `bincode` for (de)serialization
+    * In accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md), we migrated to version 2.0 that supports `no_std`, typically like so: 
+  ```diff
+  - bincode::deserialize(...)
+  + bincode::serde::decode_from_slice(..., bincode::config::legacy())
+  ```
+  * Side note: be sure to use the same versions of all types when you serialize and deserialize things... otherwise you'll get those lovely mysterious errors and spend a whole two days trying to figure out which struct field is causing the problem. 🙄
+
+
 
 ## 3. Full list of functionality needed to support `wasmtime`
 * Heap allocation for `alloc` types
@@ -310,40 +312,38 @@ In fact I've already suggested this in a presentation to select Rust team member
 * `backtrace` for capturing a stack trace
   * Plus optional symbolication of addresses, i.e., `addr2line` functionality or similar
 * Basic memory management: allocating memory regions, creating memory mappings, etc.
-  * Uses crates like `libc`, `region`, `rsix` for Unix-like OSes
-  <!-- * We had to slightly modify `wasmtime-runtime`'s structs for memory-mapped WASM modules and files to include an owned Theseus `MappedPages` instance -->
-* Mutual Exclusion
-  * We do use Theseus's own sleeping `Mutex` type, but this is also easily provided by crates like `spin`
-* signal handling for traps
-  * On Theseus, this means handling CPU exceptions
-* `object` for object file editing
+  * Unix-like OSes leverage crates like `libc`, `region`, `rsix` for this
+* Signal handling for trapping between WASM and native execution contexts 
+  * On Theseus, this means registering custom handlers for CPU exceptions (see [prior post](../../../2022/04/12/wasmtime-progress-update-2.html#the-last-sjedis-dependency-signal-handling))
+* Editing object files
   * We contributed a PR to `object` that allowed reading _and_ writing of object files in a `no_std` environment
-* `bincode` for (de)serialization
+* `bincode` + `serde` for (de)serialization
   * Just had to upgrade to newer major version that already supported `no_std`
   * Required some minor changes to how `wasmtime` uses bincode, in accordance with [`bincode`'s migration guide](https://github.com/bincode-org/bincode/blob/trunk/docs/migration_guide.md)
-* Basic reading of a file
+* Basic support for accessing filesystem paths and reading files
   * Only needed when reading a AOT pre-compiled WASM module from a file for purposes of deserialization
-* Tasks or threads
-  * Fully preemptive is essentially required, as cooperative multitasking would require a significant rework of `wasmtime`
-  * Async/await executors would also be needed if you chose to support that feature of `wasmtime`
-* Thread-Local Storage (TLS)
-  * See previous post
-* `Path`s
-* `psm` for portable stack manipulation
+* Multitasking
+  * Full preemption is essentially required, as cooperative multitasking would require a significant rework of `wasmtime`
+* Thread-Local Storage (TLS), see [prior post](../../../2022/02/03/wasmtime-progress-update.html#supporting-thread-local-storage-on-theseus)
+  * TLS via the `thread_local!()` macro is used to statefully handle traps and support stack unwinding during execution of native WASM module code
+* Access to the stack
   * Only used to obtain the current value of the stack pointer register
-* Basic I/O traits
-  * Mostly just the basic ones from `std::io`, which are usable in `core` through a variety of `no_std` crates like `core2` (previously `bare_io`), `core_io`, etc.
-* `more_asserts` for easy assertions
-  * We contributed a PR to make this `no_std`
+  * Typically via the `psm` crate, for portable stack manipulation
+* I/O traits
+  * Mostly just the basic ones from `std::io`, which are usable in `core` through a variety of `no_std` crates like `core2` (previously `bare_io`), `core_io`, etc
 * Basic error handling via `anyhow` and `thiserror`
-  * `anyhow` already supports `no_std`, but has a different API due to its reliance on `std::error::Error`. We had to painstakingly modify every call to `anyhow` with an additional `.map_err(anyhow::Error::msg)` statement.
+  * `anyhow` already supports `no_std`, but has a different API due to its reliance on `std::error::Error`
   * `thiserror` cannot support `no_std` yet, but there are `no_std`-compatible drop-in alternatives like `thiserror_core2` which derive `core2::error::Error` instead
   * Once the `std::error::Error` trait is moved into `core`, all of these pain points will be permanently healed!
+* A source of randomness
+  * Easiest option is to use OS-provided RNG via `rand`'s interface, or its `no_std` `SmallRng` feature
+* Basic I/O for printing output to a screen, console, or log
+* Mutual exclusion
+  * The `spin` crate provides an easy yet inefficient `no_std` spinlock, but we do prefer to use Theseus's own `Mutex` that blocks the current task by putting it to sleep
 * `crc32fast`, a dependency of the `object` crate
   * We contributed a PR to make this compile properly for custom targets
-* A source of randomness
-  * Easiest course of action is to use `rand`'s `SmallRng` in `no_std`
-* Basic I/O, e.g., for printing to the screen, console, or a log
+* `more_asserts` for easy assertions
+  * We contributed a trivial PR to make this `no_std`
 
 
 
