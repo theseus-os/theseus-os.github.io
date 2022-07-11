@@ -64,128 +64,12 @@ Note that the project also contains many other crates that realize optional feat
 
 TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.
 
+<div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
 
-```mermaid
-flowchart TB;
+<a href="/images/2022-posts/wasmtime_diagram.svg" alt="Wasmtime architecture diagram with dependencies" target="_blank">
+  <img align="center" src="/images/2022-posts/wasmtime_diagram.svg"/>
+</a>
 
-    top{"Top-level <br> Application"}
-
-    top --> wasmtime    
-
-    subgraph wasmtime_components [ ] %% ["<tt>wasmtime</tt> components"]
-        wasmtime("<tt>wasmtime</tt> <br> (Theseus-specific port)")
-        jit("<tt>wasmtime-jit</tt> <br> (Theseus-specific port)")
-        runtime("<tt>wasmtime-runtime</tt> <br> (Theseus-specific port)")
-        environ("<tt>wasmtime-environ</tt> <br> (Mostly <tt>no_std</tt>, needs <tt>Path</tt>)")
-        types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
-        parser("<tt>wasmparser<sup>1</sup></tt> <br> (true <tt>no_std</tt> port)")
-    end
-
-    %%%% dependencies for wasmtime-jit
-    wasmtime --> runtime
-    wasmtime --> environ
-    wasmtime --> jit
-    wasmtime --> parser
-    wasmtime ---> memory
-    wasmtime ---> stack_trace
-    wasmtime ---> object_file
-    wasmtime ---> serialization
-    wasmtime ---> unwinding
-    wasmtime ---> file
-
-    %%%% dependencies for wasmtime-jit
-    jit --> environ
-    jit --> runtime
-    jit --> parser
-    jit ---> memory
-    jit ---> serialization
-    jit ---> symbolication
-    jit ---> object_file
-    %% jit ----> external_unwind_info %% this unnecessarily complicates the diagram
-
-    %%%% dependencies for wasmtime-runtime
-    runtime --> environ
-    runtime ------> memory
-    runtime ------> signals
-    runtime ------> multitasking
-    runtime ------> unwinding
-    runtime ------> stack_trace
-    runtime ------> randomness
-    runtime ------> file
-    runtime ------> tls
-
-    %%%% dependencies for wasmtime-environ
-    environ --> types
-    environ --> parser
-    environ --> serialization
-    environ --> object_file
-
-    %%%% dependencies for wasmtime-types
-    types --> parser
-    types ---> serialization
-
-
-    subgraph platform [ ] %% [Platform-Specific Features]
-        memory[["Memory Management <br> <tt>alloc</tt> heap types, <br> <tt>mmap()</tt>, <tt>munmap()</tt>, etc"]]
-        unwinding[["Stack Unwinding <br> <tt>catch_unwind()</tt>, <br> <tt>resume_unwind()</tt>"]]
-        symbolication[["Symbolication <br> (à la <tt>addr2line</tt>)"]]
-        stack_trace[[Stack trace]]
-        signals[["Signal Handling"]]
-        object_file[["Read & write <br> object files"]]
-        tls[["Thread-Local Storage (TLS)"]]
-        file[["File read"]]
-        multitasking[["Multitasking"]]
-        randomness[["Randomness"]]
-        serialization[["(De)serialization"]]
-    end
-
-
-    subgraph third_party [ ]
-        libc(("<tt>libc</tt>"))
-        region(("<tt>region</tt>"))
-        backtrace(("<tt>backtrace</tt>"))
-        rand(("<tt>rand</tt> <br> (<tt>SmallRng</tt>)"))
-        object(("<tt>object</tt>, <br> <tt>gimli</tt>"))
-        serde(("<tt>serde</tt>, <br> <tt>bincode</tt>"))
-    end
-
-
-    backtrace ---> unwinder
-    object_file <-.- object
-    symbolication <-.- backtrace
-    randomness <-.- rand
-    stack_trace <-.- backtrace
-    serialization <-.- serde
-
-
-    subgraph theseus [ ]
-        heap{{"<tt>multi_heap</tt> <br> per-core <tt>slab</tt> heaps"}}
-        mapped_pages{{"<tt>memory::MappedPages</tt>"}}
-        unwinder{{"<tt>unwinder</tt>"}}
-        external_unwind_info{{"<tt>external_unwind_info</tt>"}}
-        exception_handler{{"<tt>exception_handler</tt>"}}
-        task{{<tt>task</tt>, <tt>spawn</tt>}}
-        thread_local{{<tt>thread_local</tt>}}
-        theseus_fs{{<tt>theseus_fs</tt>}}
-    end
-
-    unwinding <-..- external_unwind_info
-    unwinding <-..- unwinder
-    memory <-..- mapped_pages
-    memory <-..- libc
-    memory <-..- region
-    memory <-..- heap
-
-    libc --> mapped_pages
-    region --> mapped_pages
-
-    signals <-..- exception_handler
-    multitasking <-..- task
-    tls <-..- thread_local
-    tls <-..- task
-    file <-..- theseus_fs
-
-```
 
 [^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
 
@@ -319,13 +203,13 @@ Here are a few specific examples of changes that were conceptually minor yet tri
 ## 3. Full list of functionality needed to support `wasmtime`
 * Heap allocation for `alloc` types
   * Sorry, you ain't gonna run `wasmtime` without a heap!
+* Basic memory management: allocating memory regions, creating memory mappings, etc.
+  * Unix-like OSes leverage crates like `libc`, `region`, `rsix` for this
 * Stack unwinding for proper panic handling and ensuring drop handlers run
   * `wasmtime-runtime` requires both [`catch_unwind()`](https://doc.rust-lang.org/std/panic/fn.catch_unwind.html) and [`resume_unwind()`](https://doc.rust-lang.org/std/panic/fn.resume_unwind.html)
   * Also need to support registration of external unwind info that comes from WASM modules compiled into native code, plus an unwinder that can utilize this info
 * `backtrace` for capturing a stack trace
   * Plus optional symbolication of addresses, i.e., `addr2line` functionality or similar
-* Basic memory management: allocating memory regions, creating memory mappings, etc.
-  * Unix-like OSes leverage crates like `libc`, `region`, `rsix` for this
 * Signal handling for trapping between WASM and native execution contexts 
   * On Theseus, this means registering custom handlers for CPU exceptions (see [prior post](../../../2022/04/12/wasmtime-progress-update-2.html#the-last-sjedis-dependency-signal-handling))
 * Editing object files
@@ -339,9 +223,9 @@ Here are a few specific examples of changes that were conceptually minor yet tri
   * Full preemption is essentially required, as cooperative multitasking would require a significant rework of `wasmtime`
 * Thread-Local Storage (TLS), see [prior post](../../../2022/02/03/wasmtime-progress-update.html#supporting-thread-local-storage-on-theseus)
   * TLS via the `thread_local!()` macro is used to statefully handle traps and support stack unwinding during execution of native WASM module code
-* Access to the stack
-  * Only used to obtain the current value of the stack pointer register
+* Stack access
   * Typically via the `psm` crate, for portable stack manipulation
+  * Only used to obtain the current value of the stack pointer register
 * I/O traits
   * Mostly just the basic ones from `std::io`, which are usable in `core` through a variety of `no_std` crates like `core2` (previously `bare_io`), `core_io`, etc
 * Basic error handling via `anyhow` and `thiserror`
@@ -360,10 +244,62 @@ Here are a few specific examples of changes that were conceptually minor yet tri
 
 
 
+
 ## Concluding remarks + next steps
 
-TODO: insert a screenshot, the basic WASM module code, and the code on the host that runs it.
+Phew, that was a long ride — but it's only the beginning of the journey to bring `wasmtime` to Theseus.
+We still have several optional features to port and implement, starting with full support for live JIT compilation of WASM modules.
+We then plan to integrate Theseus's [existing WASI implementation](https://github.com/theseus-os/Theseus/blob/0e61ea815cbf2dc4857b8e484a5f39587e6bc25a/kernel/wasi_interpreter/src/wasi_syscalls.rs) with our port of `wasmtime` such that we can more easily run legacy programs in a WASM environment.
 
-TODO: mention fleshing out the rest of `wasmtime` and supporting optional features.
+This is a major addition to a [safe-language OS](https://www.theseus-os.com/Theseus/book/design/idea.html) like Theseus, which runs everything in a single address space and single privilege level, foregoing hardware protection in favor of reliance on language-provided safety to realize isolation between both applications and system components.
+Importantly, this will enable Theseus to safely execute unsafe code or legacy components written in unsafe languages, using WASM as a "sandbox" to prevent unsafe code from circumventing the type-based restrictions  ensured and obeyed by the rest of the OS's safe Rust environment.
 
-TODO: mention proposing design changes to `wasmtime` such that it uses traits to abstract away its platform-specific dependencies as much as possible.
+Further down the line, we would like to propose design changes to `wasmtime` such that it makes greater usage of traits to abstract away its platform-specific dependencies as much as possible.
+This would make it easier to port `wasmtime` to new platforms, and ideally reduce the amount of mandatory unsafe code.
+
+### Small demo
+
+Given the following very simple WASM module `hello.wat`:
+```wasm
+(module
+    (import "host" "hello" (func $host_hello (param i32)))
+    (func (export "hello")
+        i32.const 3
+        call $host_hello)
+)
+```
+
+we can precompile it using the `wasmtime-cli` on Linux or another machine:
+```sh
+wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
+```
+
+and then run that precompiled `hello.cwasm` binary using the following host code on Theseus:
+```rust
+use wasmtime::{Caller, Engine, Func, Instance, Module, Store};
+
+/// Taken from the docs example code in `wasmtime/crates/wasmtime/src/lib.rs`.
+fn hello(cwasm_file_contents: &[u8]) -> Result<...> {
+    let engine = Engine::default();
+    // Deserialize the AOT pre-compiled WASM binary
+    let module = unsafe {
+        Module::deserialize(&engine, cwasm_file_contents)? 
+    };
+    let mut store = Store::new(&engine, 4);
+    let host_hello = Func::wrap(&mut store, |caller: Caller<'_, u32>, param: i32| {
+        println!("Got {} from WebAssembly", param);
+        println!("my host state is: {}", caller.data());
+    });
+    let instance = Instance::new(&mut store, &module, &[host_hello.into()])?;
+    let hello = instance.get_typed_func::<(), (), _>(&mut store, "hello")?;
+    // Invoke the WASM `hello` function
+    hello.call(&mut store, ()).map_err(anyhow::Error::msg)?;
+    ...
+}
+```
+
+If all goes according to plan, you'll see the expected output below:
+
+<img align="left" src="/images/2022-posts/test_wasmtime_screenshot.png" alt="wasmtime on Theseus screenshot" width="500"/>
+
+<br clear="all">
