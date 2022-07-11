@@ -109,7 +109,7 @@ Your project(s) will expand or improve upon the existing functionality of Theseu
 
 * Extending support for running WebAssembly (WASM) on Theseus
   * Supporting more WASM interfaces, e.g., WASI extensions
-  * Improving WASM performance (e.g., with `wasmtime`) atop Theseus
+  * Improving WASM performance (e.g., with Wasmtime) atop Theseus
 * Creating a generic universal driver abstraction for cross-OS driver reuse
   * Ask us about `WASI-dd`: a future WASM-based interface for reusing drivers on any WASM-compliant OS
 * Deeper graphics support and a better graphics stack

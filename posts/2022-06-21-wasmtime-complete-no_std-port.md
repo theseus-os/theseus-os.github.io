@@ -1,63 +1,63 @@
 ---
 layout: post
-title: "Porting wasmtime to no_std atop Theseus"
+title: "Porting Wasmtime to no_std atop Theseus"
 author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---
 
-## Bringing `wasmtime` to `no_std`*
+## Bringing Wasmtime to `no_std`*
 
-🎉🎉 `wasmtime` now builds and runs on Theseus! 🎉🎉
+🎉🎉 Wasmtime now builds and runs on Theseus! 🎉🎉
 
-This is the first port of `wasmtime` to a `no_std`* environment, to the best of our knowledge, despite it being a [very](https://github.com/bytecodealliance/wasmtime/issues/75) [hot](https://github.com/bytecodealliance/wasmtime/pull/2024) [topic](https://github.com/bytecodealliance/wasmtime/pull/554) [of](https://github.com/bytecodealliance/wasmtime/issues/3495) [conversation](https://github.com/bytecodealliance/wasmtime/issues/3451).
-We completed the initial minimal version of `wasmtime` and [successfully ran it on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
+This is the first port of Wasmtime to a `no_std`* environment, to the best of our knowledge, despite it being a [very](https://github.com/bytecodealliance/wasmtime/issues/75) [hot](https://github.com/bytecodealliance/wasmtime/pull/2024) [topic](https://github.com/bytecodealliance/wasmtime/pull/554) [of](https://github.com/bytecodealliance/wasmtime/issues/3495) [conversation](https://github.com/bytecodealliance/wasmtime/issues/3451).
+We completed the initial minimal version of Wasmtime and [successfully ran it on Theseus on May 17th, 2022](https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916).
 
 This milestone marks the culmination of a very long journey, as evidenced by our previous several posts on this topic 
-and the fact that our initial port started with a version of `wasmtime` from mid-October 2021. Yeesh!
+and the fact that our initial port started with a version of Wasmtime from mid-October 2021. Yeesh!
 * [November 2021: Introducing the goal of running WASM on Theseus](../../../2021/11/01/October-Update-WASM.html)
-* [December 2021: Porting the low-level "simple" `wasmtime` crates and dependencies](../../../2021/12/31/November-December-Update-WASM.html#progress-on-porting-wasmtime-to-theseus)
+* [December 2021: Porting the low-level "simple" Wasmtime crates and dependencies](../../../2021/12/31/November-December-Update-WASM.html#progress-on-porting-wasmtime-to-theseus)
 * [February 2022: Porting the largest crate, `wasmtime-runtime`, Part 1](../../../2022/02/03/wasmtime-progress-update.html)
 * [April 2022: Porting `wasmtime-runtime`, Part 2](../../../2022/04/12/wasmtime-progress-update-2.html)
 * This post: Porting the top-level `wasmtime` crate and tying everything together
 
 In this post, we aim to
-1. Provide a high-level overview of `wasmtime` and its multi-crate architecture,
-2. Enumerate the changes needed to build `wasmtime` on `no_std`*, and
-3. Itemize the dependencies/functionality that `wasmtime` requires from the underlying platform.
+1. Provide a high-level overview of Wasmtime and its multi-crate architecture,
+2. Enumerate the changes needed to build Wasmtime on `no_std`*, and
+3. Itemize the dependencies/functionality that Wasmtime requires from the underlying platform.
 
-While we don't intend this to be a step-by-step porting tutorial, we do hope it makes it easier to port and run `wasmtime` on other platforms in the future. 
+While we don't intend this to be a step-by-step porting tutorial, we do hope it makes it easier to port and run Wasmtime on other platforms in the future. 
 
 > **Why is there an asterisk** by `no_std`? 
 > 
 > Theseus doesn't yet support the `std` library, so this is a legitimate `no_std` port.
 > However, one cannot simply take this port and run it within any other `no_std` environment,
-> because `wasmtime` still relies on lots of functionality from the underlying platform.
+> because Wasmtime still relies on lots of functionality from the underlying platform.
 > 
-> We did have to add some `std`-like components to Theseus in order to satisfy `wasmtime`'s needs, as shown below.
+> We did have to add some `std`-like components to Theseus in order to satisfy Wasmtime's needs, as shown below.
 
 
 "C'mon, just skip to the <s>recipe</s> code already!"
 
-No problem, [here is the full changeset to `wasmtime`](https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88). 
+No problem, [here is the full changeset to Wasmtime](https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88). 
 Note that this doesn't include the many changes and extensions we made to Theseus to support this; those are described in the rest of the article. 
 
 
-## 1. Summary of `wasmtime`'s key parts
+## 1. Summary of Wasmtime's key parts
 
-As described in [`wasmtime`'s documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate called `wasmtime` that re-exports and connects together key functionality from several internal crates.
+As described in [Wasmtime's documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate called `wasmtime` that re-exports and connects together key functionality from several internal crates.
 
 
-* `wasmtime-cli`: a CLI app that offers simple interactive access to standard `wasmtime` features 
+* `wasmtime-cli`: a CLI app that offers simple interactive access to standard Wasmtime features 
 * `wasmtime`: exposes a safe, embeddable API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them
 * `wasmtime-jit`: facilitates JIT compilation and execution of WASM modules using a compiler's code generator (currently cranelift)
 * `wasmtime-runtime`: implements the majority of the runtime logic for executing WASM binaries atop of a give host platform
 * `wasmtime-environ`: standalone abstract definitions of core WASM concepts and environment types, enabling integration with the cranelift backend
 * `wasmtime-types`: definitions for core WASM types and execution concepts
-* `wasmparser`: an external (non-`wasmtime`) tool for parsing WASM binaries
+* `wasmparser`: an external (non-Wasmtime) tool for parsing WASM binaries
 <!-- * `cranelift-entity`: core data structures used by the Cranelift code generator   -->
 
 
-The diagram below depicts the above major components of `wasmtime`[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
+The diagram below depicts the above major components of Wasmtime[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and `wasmtime-cli`) aren't necessary for an initial port. 
 
@@ -71,10 +71,10 @@ TODO: use better formatting and coloring for the nodes/edges of this diagram. Al
 
 <div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
 
-[^1]: For simplicity, we depict `wasmparser` as part of the set of `wasmtime` crates, even though it is actually part of the separate `wasm-tools` project.
+[^1]: For simplicity, we depict `wasmparser` as part of the set of Wasmtime crates, even though it is actually part of the separate `wasm-tools` project.
 
 
-## 2. Changes made to `wasmtime` components
+## 2. Changes made to Wasmtime components
 
 We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on `no_std` on Theseus, and then moved on to the next highest layer in the dependency stack. 
 The lowest-level crates, `wasmparser`, `wasmtime-types`, and `wasmtime-environ` were relatively simple to port to `no_std`, requiring only trivial changes [described in the section below](#trivial-yet-tedious-changes-for-nostd-compatibility).
@@ -85,7 +85,7 @@ We have already described our efforts to port `wasmtime-runtime` to Theseus in [
 Moving up, porting `wasmtime-jit` and then `wasmtime` was fairly straightforward once `wasmtime-runtime` was done, as they share many dependencies.
 There were a few issues that needed fixing, as described below, but nothing strenuous.
 
-Finally, the real fun begins once all `wasmtime` crates are able to be compiled for your platform! 
+Finally, the real fun begins once all Wasmtime crates are able to be compiled for your platform! 
 You then attempt to run it for the first time only to discover that nothing works and you don't know why.
 
 Welcome to integration hell! 😈
@@ -94,7 +94,7 @@ Welcome to integration hell! 😈
 
 ### Logic and structural changes
 
-As `wasmtime` is cross-platform, it contains several platform-specific modules that we must implement for Theseus. 
+As Wasmtime is cross-platform, it contains several platform-specific modules that we must implement for Theseus. 
 These typically look something like:
 ```rust
 if #[cfg(unix)] {
@@ -200,9 +200,9 @@ Here are a few specific examples of changes that were conceptually minor yet tri
 
 
 
-## 3. Full list of functionality needed to support `wasmtime`
+## 3. Full list of functionality needed to support Wasmtime
 * Heap allocation for `alloc` types
-  * Sorry, you ain't gonna run `wasmtime` without a heap!
+  * Sorry, you ain't gonna run Wasmtime without a heap!
 * Basic memory management: allocating memory regions, creating memory mappings, etc.
   * Unix-like OSes leverage crates like `libc`, `region`, `rsix` for this
 * Stack unwinding for proper panic handling and ensuring drop handlers run
@@ -220,7 +220,7 @@ Here are a few specific examples of changes that were conceptually minor yet tri
 * Basic support for accessing filesystem paths and reading files
   * Only needed when reading a AOT pre-compiled WASM module from a file for purposes of deserialization
 * Multitasking
-  * Full preemption is essentially required, as cooperative multitasking would require a significant rework of `wasmtime`
+  * Full preemption is essentially required, as cooperative multitasking would require a significant rework of Wasmtime
 * Thread-Local Storage (TLS), see [prior post](../../../2022/02/03/wasmtime-progress-update.html#supporting-thread-local-storage-on-theseus)
   * TLS via the `thread_local!()` macro is used to statefully handle traps and support stack unwinding during execution of native WASM module code
 * Stack access
@@ -247,15 +247,15 @@ Here are a few specific examples of changes that were conceptually minor yet tri
 
 ## Concluding remarks + next steps
 
-Phew, that was a long ride — but it's only the beginning of the journey to bring `wasmtime` to Theseus.
+Phew, that was a long ride — but it's only the beginning of the journey to bring Wasmtime to Theseus.
 We still have several optional features to port and implement, starting with full support for live JIT compilation of WASM modules.
-We then plan to integrate Theseus's [existing WASI implementation](https://github.com/theseus-os/Theseus/blob/0e61ea815cbf2dc4857b8e484a5f39587e6bc25a/kernel/wasi_interpreter/src/wasi_syscalls.rs) with our port of `wasmtime` such that we can more easily run legacy programs in a WASM environment.
+We then plan to integrate Theseus's [existing WASI implementation](https://github.com/theseus-os/Theseus/blob/0e61ea815cbf2dc4857b8e484a5f39587e6bc25a/kernel/wasi_interpreter/src/wasi_syscalls.rs) with our port of Wasmtime such that we can more easily run legacy programs in a WASM environment.
 
 This is a major addition to a [safe-language OS](https://www.theseus-os.com/Theseus/book/design/idea.html) like Theseus, which runs everything in a single address space and single privilege level, foregoing hardware protection in favor of reliance on language-provided safety to realize isolation between both applications and system components.
 Importantly, this will enable Theseus to safely execute unsafe code or legacy components written in unsafe languages, using WASM as a "sandbox" to prevent unsafe code from circumventing the type-based restrictions  ensured and obeyed by the rest of the OS's safe Rust environment.
 
-Further down the line, we would like to propose design changes to `wasmtime` such that it makes greater usage of traits to abstract away its platform-specific dependencies as much as possible.
-This would make it easier to port `wasmtime` to new platforms, and ideally reduce the amount of mandatory unsafe code.
+Further down the line, we would like to propose design changes to Wasmtime such that it makes greater usage of traits to abstract away its platform-specific dependencies as much as possible.
+This would make it easier to port Wasmtime to new platforms, and ideally reduce the amount of mandatory unsafe code.
 
 ### Small demo
 

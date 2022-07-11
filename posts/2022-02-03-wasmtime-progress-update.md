@@ -6,8 +6,8 @@ release: false
 ---
 
 
-## Porting `wasmtime-runtime`, the key `wasmtime` crate
-A [previous post from late 2021](../../../2021/12/31/November-December-Update-WASM.html) chronicled our ongoing journey to port `wasmtime` to Theseus. 
+## Porting `wasmtime-runtime`, the key Wasmtime crate
+A [previous post from late 2021](../../../2021/12/31/November-December-Update-WASM.html) chronicled our ongoing journey to port Wasmtime to Theseus. 
 While our bottom-up approach got off to a strong start, we quickly encountered our first major challenge when examining the `wasmtime-runtime` crate, as it contains many dependencies on platform-specific and legacy system interfaces:
 * Unix-like memory mapping and protection
 * Signal/trap handling 
@@ -43,7 +43,7 @@ Theseus's libc implementation is called `tlibc`. which is described in [this boo
 So far it has been loosely based on the Redox project's `relibc`.
 
 Our efforts of late were focused on supporting `mmap` for POSIX-style memory mappings, which Theseus has traditionally eschewed because they are unsafe and poorly-designed from a state management perspective[^1].
-In the future, we also may support POSIX-style signal handlers, but for now we have chosen to re-implement `wasmtime`'s signal handling directly in safe Rust atop Theseus rather than going through an unsafe `libc` FFI boundary for no good reason.
+In the future, we also may support POSIX-style signal handlers, but for now we have chosen to re-implement Wasmtime's signal handling directly in safe Rust atop Theseus rather than going through an unsafe `libc` FFI boundary for no good reason.
 
 The bulk of the `mmap` implemenation for `tlibc` was added in [commit fffda85](https://github.com/theseus-os/Theseus/commit/fffda853e71b5a0d7b20b850297962227e592850).
 The key aspects of this are:

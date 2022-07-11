@@ -27,7 +27,7 @@ To bring WASM to Theseus, we have started two concurrent projects:
  1. The simple approach: use the [`wasmi` intepreter crate from parity-tech](https://github.com/paritytech/wasmi) 
     * Relatively simple, as `wasmi` is `no_std`-compliant and requires only minimal interfacing with the host platform in order to use it
     * We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus's subsystems
- 2. The complex approach: port the [`wasmtime` WASM runtime project](https://github.com/bytecodealliance/wasmtime) to Theseus
+ 2. The complex approach: port the [Wasmtime WASM runtime project](https://github.com/bytecodealliance/wasmtime) to Theseus
     * Massively complex with dozens of platform-specific logic and API calls
     * Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features
 
@@ -35,12 +35,12 @@ To bring WASM to Theseus, we have started two concurrent projects:
 [Vikram Mullick](https://github.com/vikrammullick) has begun working on part 1 above as part of his senior capstone project at Yale.
 [Kevin Boos](https://github.com/kevinaboos) has begun working on part 2 above, and will also assist with part 1 as needed. 
 
-Due to the complex nature of `wasmtime` with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:
+Due to the complex nature of Wasmtime with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:
 * Theseus can "quickly" get up and running with basic WASM support, allowing us to:
    * Experiment with running legacy components as WASM modules
    * Begin implementing support for WASI and other key WASM interfaces, e.g., WebGL
    * Integrate Theseus's existing runtime loading and linking infrastructure with WASM
-* We can leverage the existing WASM and WASI infrastructure layers to more easily support `wasmtime`
+* We can leverage the existing WASM and WASI infrastructure layers to more easily support Wasmtime
    * This will realize a ~10x performance improvement over the initial `wasmi`, without wasting the initial `wasmi`-based efforts
 
 

@@ -35,4 +35,4 @@ wasm /extra_files/wasm/exorbitant.wasm
 
 --------------------
 
-Our work on `wasmtime` atop Theseus is still ongoing. Please check back for more updates soon!
+Our work on Wasmtime atop Theseus is still ongoing. Please check back for more updates soon!

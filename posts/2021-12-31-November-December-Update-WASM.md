@@ -29,10 +29,10 @@ Second, a simple version of `grep` version 2.0 compiled to WASM, which demonstra
 
 Once WASM support is officially in the main branch, we will offer an easier command line interface for loading and executing WASM binaries.
 
-## Progress on Porting `wasmtime` to Theseus
-While the interpreted WASM project is wrapping up, the port of `wasmtime` is just getting started.
+## Progress on Porting Wasmtime to Theseus
+While the interpreted WASM project is wrapping up, the port of Wasmtime is just getting started.
 
-As described in [`wasmtime`'s documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
+As described in [Wasmtime's documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
 The top-level crate is aptly named `wasmtime`, and it primarily exposes a safe API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them.
 
 ### Bottom-up approach -- off to a strong start 
@@ -57,7 +57,7 @@ In addition, we had to modify the following crates that were dependencies of was
 
 
 ### Looking forward in (wasm)time
-The main challenge in porting `wasmtime` to Theseus is porting the `wasmtime-runtime` crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
+The main challenge in porting Wasmtime to Theseus is porting the `wasmtime-runtime` crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
 This crate is massive and will likely take months to complete, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.
 
 We'll start by tackling the main dependencies of `wasmtime-runtime`, most of which are based around legacy POSIX-style interfaces and traditional OS platform abstractions:

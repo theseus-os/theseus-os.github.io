@@ -7,8 +7,8 @@ release: false
 
 ## The <s>quest</s> port continues
 
-This post covers the highlights of our ongoing work to port `wasmtime` to Theseus; see the previous post(s) for more information.
-Interested folks can [follow along with the ported `wasmtime` code here](https://github.com/theseus-os/wasmtime/tree/theseus).
+This post covers the highlights of our ongoing work to port Wasmtime to Theseus; see the previous post(s) for more information.
+Interested folks can [follow along with the ported Wasmtime code here](https://github.com/theseus-os/wasmtime/tree/theseus).
 
 📢 Good news: `wasmtime-runtime` now builds on Theseus! 📢
 
@@ -60,7 +60,7 @@ The key missing parts were:
 The `wasmtime-runtime` crate uses `backtrace` to capture a stack trace when a *trap* occurs, such as a fault during WASM execution or another systems-level problem like Out Of Memory (OOM).
 This trace is used to both:
 1. Traverse the call stack to see if any stack frames from WASM code exist, and
-2. Provide the user or caller of `wasmtime` with more context about a runtime failure.
+2. Provide the user or caller of Wasmtime with more context about a runtime failure.
 
 Porting `backtrace` was relatively simple; the primary changes required were to publicly expose more details about Theseus's custom unwinder.
 Feel free to [check out the full changeset here](https://github.com/theseus-os/backtrace-rs/compare/5e15d73..c56bae0), summarized below:
@@ -76,13 +76,13 @@ Feel free to [check out the full changeset here](https://github.com/theseus-os/b
 The one remaining feature that our port of `backtrace` lacks is connecting a resolved symbol to its location: file path, line number, and column number.
 This is conceptually easy to do but requires debug information to be parsed from an object file. 
 Although [Theseus does support parsing DWARF debug info](https://www.theseus-os.com/Theseus/doc/debug_info/index.html), it isn't always available because debug info is typically stripped from object files to keep their size down.
-Fortunately, the `backtrace` crate treats this information as optional, and thus `wasmtime` doesn't require it to be available, so we can simply return `None` when asked for symbol location details.
+Fortunately, the `backtrace` crate treats this information as optional, and thus Wasmtime doesn't require it to be available, so we can simply return `None` when asked for symbol location details.
 
 
 #### The `Path` Forwards
 
-Many `wasmtime` crates use `std::path::{Path, PathBuf}` to refer to WASM module files that are JIT-compiled and loaded into a `wasmtime` engine.
-Thus, we must implement a version of path types that are API-compatible with Rust's `std::path` types in order to minimize the number of changes to `wasmtime` itself.
+Many Wasmtime crates use `std::path::{Path, PathBuf}` to refer to WASM module files that are JIT-compiled and loaded into a Wasmtime engine.
+Thus, we must implement a version of path types that are API-compatible with Rust's `std::path` types in order to minimize the number of changes to Wasmtime itself.
 You can find [the code for that here](https://github.com/theseus-os/Theseus/commit/6a4ba4f42ae407afe71dd77042fa15a523e15134), which is primarily a quick & dirty copy of the code from `std::path`.
 
 Theseus already offers [its own `Path` type](https://www.theseus-os.com/Theseus/doc/path/struct.Path.html), which is similar but not identical to those in Rust `std::path`.
@@ -96,7 +96,7 @@ All we need is a simple glue code layer between `std::PathBuf` and Theseus's `pa
 
 
 #### Relax and unwind
-The `resume_unwind()` function is used in `wasmtime` to carry on with the unwinding procedure after it has been *caught*. This is currently only used in the runtime's trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.
+The `resume_unwind()` function is used in Wasmtime to carry on with the unwinding procedure after it has been *caught*. This is currently only used in the runtime's trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.
 
 
 Here is Theseus's [implementation of `resume_unwind()` with code that tests it](https://github.com/theseus-os/Theseus/commit/ca960df2a61d807f23514469a94355ee2689c556#diff-d17ff1523da38049c7e75df2747fc33e3a18dea8c6a57ecb1ba5590ff6f1a699).
@@ -118,10 +118,10 @@ theseus_catch_unwind::resume_unwind(
 
 
 #### Oh, an `Error` Occurred? <s>Anyway</s> Anyhow...
-In yet another tribute to D. Tolnay, `wasmtime` uses his superb `anyhow` and `thiserror` crates for convenient error handling across nearly every source file and function.
+In yet another tribute to D. Tolnay, Wasmtime uses his superb `anyhow` and `thiserror` crates for convenient error handling across nearly every source file and function.
 While `anyhow` technically supports `no_std` environments like Theseus, it cannot accommodate the same API.
 
-> Thus, we must change ***every*. *single*. *usage*.** of `anyhow` in the whole `wasmtime` code base.
+> Thus, we must change ***every*. *single*. *usage*.** of `anyhow` in the whole Wasmtime code base.
 
 The majority of the changes simply require use to add this snippet to any `Result` type before returning or unwrapping it:
 ```rust
@@ -140,7 +140,7 @@ Thankfully, supporting `thiserror` is a bit easier, thanks to the [`thiserror_co
 #### The Last <s>Jedi</s> Dependency: Signal Handling
 
 The last remaining feature needed to finish porting `wasmtime-runtime` is signal handling.
-This is needed for `wasmtime` to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.
+This is needed for Wasmtime to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.
 
 Theseus doesn't offer POSIX-like signals because they're unsafe and unnecessary in a safe-language OS, but it does implement handlers for [CPU exceptions](https://wiki.osdev.org/Exceptions), e.g., page faults, general protection faults, etc.
 However, we previously did not allow third-party crates to register handlers (callbacks) 
