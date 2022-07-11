@@ -21,7 +21,7 @@ and the fact that our initial port started with a version of `wasmtime` from mid
 * This post: Porting the top-level `wasmtime` crate and tying everything together
 
 In this post, we aim to
-1. Provide a high-level description of `wasmtime` and its multi-crate architecture,
+1. Provide a high-level overview of `wasmtime` and its multi-crate architecture,
 2. Enumerate the changes needed to build `wasmtime` on `no_std`*, and
 3. Itemize the dependencies/functionality that `wasmtime` requires from the underlying platform.
 
@@ -43,6 +43,19 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 
 
 ## 1. Summary of `wasmtime`'s key parts
+
+As described in [`wasmtime`'s documentation](https://docs.wasmtime.dev/contributing-architecture.html), the project is architected as one top-level user-facing crate called `wasmtime` that re-exports and connects together key functionality from several internal crates.
+
+
+* `wasmtime-cli`: a CLI app that offers simple interactive access to standard `wasmtime` features 
+* `wasmtime`: exposes a safe, embeddable API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them
+* `wasmtime-jit`: facilitates JIT compilation and execution of WASM modules using a compiler's code generator (currently cranelift)
+* `wasmtime-runtime`: implements the majority of the runtime logic for executing WASM binaries atop of a give host platform
+* `wasmtime-environ`: standalone abstract definitions of core WASM concepts and environment types, enabling integration with the cranelift backend
+* `wasmtime-types`: definitions for core WASM types and execution concepts
+* `wasmparser`: an external (non-`wasmtime`) tool for parsing WASM binaries
+<!-- * `cranelift-entity`: core data structures used by the Cranelift code generator   -->
+
 
 The diagram below depicts the above major components of `wasmtime`[^1] and their dependencies, with a focus on those that *did not already support `no_std`* when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
