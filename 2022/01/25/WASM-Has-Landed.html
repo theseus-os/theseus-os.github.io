@@ -85,7 +85,7 @@
       <h2><a href="#running-wasm--wasi-modules-in-a-safe-os-kernel" aria-hidden="true" class="anchor" id="running-wasm--wasi-modules-in-a-safe-os-kernel"></a>Running WASM + WASI modules in a safe OS kernel</h2>
 <p>🚀🚀 WASM has now landed in Theseus! 🚀🚀</p>
 <p>With <a href="https://github.com/theseus-os/Theseus/commit/f4aa715f0fc706a0e3b0f3f21057338c0b295ffb">PR #472</a> being merged in, Theseus's main branch allows you to execute WASM modules (as precompiled WASM binaries) that use both the core WASM specification and basic WASI extensions.</p>
-<p>See our <a href="2021-12-31-November-December-Update-WASM.md">previous blog post</a> for more about this effort.</p>
+<p>See our <a href="../../../2021/12/31/November-December-Update-WASM.html">previous blog post</a> for more about this effort.</p>
 <h3><a href="#how-to-use-and-run-wasm-on-theseus" aria-hidden="true" class="anchor" id="how-to-use-and-run-wasm-on-theseus"></a>How to use and run WASM on Theseus</h3>
 <p>Theseus doesn't yet support running an actual compiler, so you first need to download a pre-compiled WASM binary on the Theseus command line or package one up into the OS image itself during build time. We describe the latter approach below.</p>
 <p>Theseus's build tooling now supports including arbitrary &quot;extra files&quot; in the generated OS <code>.iso</code> image; <a href="https://github.com/theseus-os/Theseus/tree/theseus_main/extra_files">click here to read more</a> about that feature.
