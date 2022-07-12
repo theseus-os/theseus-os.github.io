@@ -2,6 +2,7 @@
 layout: post
 title: "Porting Wasmtime to no_std atop Theseus"
 author: Kevin Boos <https://github.com/kevinaboos>
+team: Discuss this post on reddit <https://www.reddit.com/r/rust/comments/vxfidv/how_we_ported_wasmtime_to_no_std_atop_theseus_os/>
 release: false
 ---
 
