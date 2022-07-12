@@ -61,15 +61,19 @@ The diagram below depicts the above major components of Wasmtime[^1] and their d
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and `wasmtime-cli`) aren't necessary for an initial port. 
 
-
-TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.
-
+<br>
 
 <a href="/images/2022-posts/wasmtime_diagram.svg" alt="Wasmtime architecture diagram with dependencies" target="_blank">
   <img align="center" src="/images/2022-posts/wasmtime_diagram.svg"/>
 </a>
 
-<div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
+<br>
+<div align="center"><em>(click diagram to open it in a full-size window)</em></div>
+<br>
+
+<a href="/images/2022-posts/wasmtime_diagram_legend.svg" alt="Wasmtime architecture diagram legend" target="_blank">
+  <img align="center" src="/images/2022-posts/wasmtime_diagram_legend.svg" width="700"/>
+</a>
 
 [^1]: For simplicity, we depict `wasmparser` as part of the set of Wasmtime crates, even though it is actually part of the separate `wasm-tools` project.
 
@@ -270,7 +274,7 @@ Given the following very simple WASM module `hello.wat`:
 ```
 
 we can precompile it using the `wasmtime-cli` on Linux or another machine:
-```sh
+```bash
 wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
 ```
 

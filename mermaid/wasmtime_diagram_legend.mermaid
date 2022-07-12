@@ -1,0 +1,46 @@
+%%{ init : { "theme" : "default", "themeVariables": { "fontSize": "20px" }, "flowchart" : { "curve" : "basis" }}}%%
+%%  
+
+flowchart TB;
+
+    %%%% wasmtime party node format
+    classDef Wasmtime fill:lightsalmon,stroke:darkred
+    class wasmtime,jit,runtime,environ,types,parser Wasmtime;
+
+    %%%% third party node format
+    classDef ThirdParty fill:#bbdefc,stroke:blue
+    class libc,region,backtrace,rand,serde,object ThirdParty;
+
+    %%%% theseus node format
+    classDef Theseus fill:lightgreen,stroke:green
+    class heap,mapped_pages,unwinder,external_unwind_info,exception_handler,task,thread_local,theseus_fs Theseus;
+
+    %%%% features node format
+    classDef Features fill:#dbc7ff,stroke:#47139c
+    class memory,unwinding,symbolication,stack_trace,signals,serialization,object_file,tls,file,multitasking,randomness Features;
+
+    subgraph legend [ ]
+        direction TB
+        zero("Wasmtime component")
+        one[[Platform Abstraction/Feature]]
+        two{{Theseus crate}}
+        three(("Third-party crate"))
+
+        subgraph arrows [ ]
+            direction LR
+            start1[ ] -->|depends on| stop1[ ]
+            start2[ ] -.-|concrete feature implementation| stop2[ ]
+            style start1 height:0px;
+            style stop1 height:0px;
+            style start2 height:0px;
+            style stop2 height:0px; 
+        end
+        style arrows fill:white,stroke:lightgray
+
+        class zero Wasmtime;
+        class one Features;
+        class two Theseus;
+        class three ThirdParty;
+    end
+    style legend fill:white
+
