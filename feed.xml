@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/</uri>
     </author>
-    <updated>2022-07-12T17:26:00+00:00</updated>
+    <updated>2022-07-12T17:51:22+00:00</updated>
 
     
     <entry>
@@ -1103,7 +1103,7 @@ This will also make it significantly easier to run legacy components with comple
 &lt;li&gt;The simple approach: use the &lt;a href&#x3D;&quot;https://github.com/paritytech/wasmi&quot;&gt;&lt;code&gt;wasmi&lt;/code&gt; intepreter crate from parity-tech&lt;/a&gt;
 &lt;ul&gt;
 &lt;li&gt;Relatively simple, as &lt;code&gt;wasmi&lt;/code&gt; is &lt;code&gt;no_std&lt;/code&gt;-compliant and requires only minimal interfacing with the host platform in order to use it&lt;/li&gt;
-&lt;li&gt;We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus&#x27;s subsystems&lt;/li&gt;
+&lt;li&gt;We can implement WASI system calls as needed, which act as the glue between the WASM environment and the rest of Theseus&#x27;s subsystems&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;The complex approach: port the &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime&quot;&gt;Wasmtime WASM runtime project&lt;/a&gt; to Theseus

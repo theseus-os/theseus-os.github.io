@@ -102,7 +102,7 @@ This will also make it significantly easier to run legacy components with comple
 <li>The simple approach: use the <a href="https://github.com/paritytech/wasmi"><code>wasmi</code> intepreter crate from parity-tech</a>
 <ul>
 <li>Relatively simple, as <code>wasmi</code> is <code>no_std</code>-compliant and requires only minimal interfacing with the host platform in order to use it</li>
-<li>We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus's subsystems</li>
+<li>We can implement WASI system calls as needed, which act as the glue between the WASM environment and the rest of Theseus's subsystems</li>
 </ul>
 </li>
 <li>The complex approach: port the <a href="https://github.com/bytecodealliance/wasmtime">Wasmtime WASM runtime project</a> to Theseus
