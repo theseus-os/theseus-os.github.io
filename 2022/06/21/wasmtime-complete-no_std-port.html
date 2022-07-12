@@ -127,11 +127,16 @@ Note that this doesn't include the many changes and extensions we made to Theseu
 <p>The diagram below depicts the above major components of Wasmtime<sup class="footnote-ref"><a href="#fn1" id="fnref1">1</a></sup> and their dependencies, with a focus on those that <em>did not already support <code>no_std</code></em> when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and <code>wasmtime-cli</code>) aren't necessary for an initial port.</p>
-<p>TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.</p>
+<br>
 <a href="/images/2022-posts/wasmtime_diagram.svg" alt="Wasmtime architecture diagram with dependencies" target="_blank">
   <img align="center" src="/images/2022-posts/wasmtime_diagram.svg"/>
 </a>
-<div align="center"><em>(click the diagram to open it in a full-size window)</em></div>
+<br>
+<div align="center"><em>(click diagram to open it in a full-size window)</em></div>
+<br>
+<a href="/images/2022-posts/wasmtime_diagram_legend.svg" alt="Wasmtime architecture diagram legend" target="_blank">
+  <img align="center" src="/images/2022-posts/wasmtime_diagram_legend.svg" width="700"/>
+</a>
 <h2><a href="#2-changes-made-to-wasmtime-components" aria-hidden="true" class="anchor" id="2-changes-made-to-wasmtime-components"></a>2. Changes made to Wasmtime components</h2>
 <p>We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on <code>no_std</code> on Theseus, and then moved on to the next highest layer in the dependency stack.
 The lowest-level crates, <code>wasmparser</code>, <code>wasmtime-types</code>, and <code>wasmtime-environ</code> were relatively simple to port to <code>no_std</code>, requiring only trivial changes <a href="#trivial-yet-tedious-changes-for-nostd-compatibility">described in the section below</a>.</p>
@@ -363,7 +368,7 @@ This would make it easier to port Wasmtime to new platforms, and ideally reduce 
 )
 </code></pre>
 <p>we can precompile it using the <code>wasmtime-cli</code> on Linux or another machine:</p>
-<pre><code class="language-sh">wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
+<pre><code class="language-bash">wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
 </code></pre>
 <p>and then run that precompiled <code>hello.cwasm</code> binary using the following host code on Theseus:</p>
 <pre><code class="language-rust">use wasmtime::{Caller, Engine, Func, Instance, Module, Store};

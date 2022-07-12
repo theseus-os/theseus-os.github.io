@@ -10,7 +10,7 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/</uri>
     </author>
-    <updated>2022-07-12T00:41:02+00:00</updated>
+    <updated>2022-07-12T06:23:53+00:00</updated>
 
     
     <entry>
@@ -64,11 +64,16 @@ Note that this doesn&#x27;t include the many changes and extensions we made to T
 &lt;p&gt;The diagram below depicts the above major components of Wasmtime&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; and their dependencies, with a focus on those that &lt;em&gt;did not already support &lt;code&gt;no_std&lt;/code&gt;&lt;/em&gt; when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and &lt;code&gt;wasmtime-cli&lt;/code&gt;) aren&#x27;t necessary for an initial port.&lt;/p&gt;
-&lt;p&gt;TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.&lt;/p&gt;
+&lt;br&gt;
 &lt;a href&#x3D;&quot;/images/2022-posts/wasmtime_diagram.svg&quot; alt&#x3D;&quot;Wasmtime architecture diagram with dependencies&quot; target&#x3D;&quot;_blank&quot;&gt;
   &lt;img align&#x3D;&quot;center&quot; src&#x3D;&quot;/images/2022-posts/wasmtime_diagram.svg&quot;/&gt;
 &lt;/a&gt;
-&lt;div align&#x3D;&quot;center&quot;&gt;&lt;em&gt;(click the diagram to open it in a full-size window)&lt;/em&gt;&lt;/div&gt;
+&lt;br&gt;
+&lt;div align&#x3D;&quot;center&quot;&gt;&lt;em&gt;(click diagram to open it in a full-size window)&lt;/em&gt;&lt;/div&gt;
+&lt;br&gt;
+&lt;a href&#x3D;&quot;/images/2022-posts/wasmtime_diagram_legend.svg&quot; alt&#x3D;&quot;Wasmtime architecture diagram legend&quot; target&#x3D;&quot;_blank&quot;&gt;
+  &lt;img align&#x3D;&quot;center&quot; src&#x3D;&quot;/images/2022-posts/wasmtime_diagram_legend.svg&quot; width&#x3D;&quot;700&quot;/&gt;
+&lt;/a&gt;
 &lt;h2&gt;&lt;a href&#x3D;&quot;#2-changes-made-to-wasmtime-components&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;2-changes-made-to-wasmtime-components&quot;&gt;&lt;/a&gt;2. Changes made to Wasmtime components&lt;/h2&gt;
 &lt;p&gt;We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on &lt;code&gt;no_std&lt;/code&gt; on Theseus, and then moved on to the next highest layer in the dependency stack.
 The lowest-level crates, &lt;code&gt;wasmparser&lt;/code&gt;, &lt;code&gt;wasmtime-types&lt;/code&gt;, and &lt;code&gt;wasmtime-environ&lt;/code&gt; were relatively simple to port to &lt;code&gt;no_std&lt;/code&gt;, requiring only trivial changes &lt;a href&#x3D;&quot;#trivial-yet-tedious-changes-for-nostd-compatibility&quot;&gt;described in the section below&lt;/a&gt;.&lt;/p&gt;
@@ -300,7 +305,7 @@ This would make it easier to port Wasmtime to new platforms, and ideally reduce 
 )
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;we can precompile it using the &lt;code&gt;wasmtime-cli&lt;/code&gt; on Linux or another machine:&lt;/p&gt;
-&lt;pre&gt;&lt;code class&#x3D;&quot;language-sh&quot;&gt;wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-bash&quot;&gt;wasmtime --compile --target x86_64-theseus hello.was --output hello.cwasm
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;and then run that precompiled &lt;code&gt;hello.cwasm&lt;/code&gt; binary using the following host code on Theseus:&lt;/p&gt;
 &lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;use wasmtime::{Caller, Engine, Func, Instance, Module, Store};
