@@ -26,7 +26,7 @@ This will also make it significantly easier to run legacy components with comple
 To bring WASM to Theseus, we have started two concurrent projects:
  1. The simple approach: use the [`wasmi` intepreter crate from parity-tech](https://github.com/paritytech/wasmi) 
     * Relatively simple, as `wasmi` is `no_std`-compliant and requires only minimal interfacing with the host platform in order to use it
-    * We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus's subsystems
+    * We can implement WASI system calls as needed, which act as the glue between the WASM environment and the rest of Theseus's subsystems
  2. The complex approach: port the [Wasmtime WASM runtime project](https://github.com/bytecodealliance/wasmtime) to Theseus
     * Massively complex with dozens of platform-specific logic and API calls
     * Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features
