@@ -1,3 +1,6 @@
+%%{ init : { "theme" : "default", "themeVariables": { "fontSize": "20px" }, "flowchart" : { "curve" : "basis" }}}%%
+%%  
+
 flowchart TB;
 
     top("Top-level application <br> e.g., <tt>wasmtime-cli</tt>")
@@ -12,6 +15,9 @@ flowchart TB;
         types("<tt>wasmtime-types</tt>  <br> (true <tt>no_std</tt> port)")
         parser("<tt>wasmparser<sup>1</sup></tt> <br> (true <tt>no_std</tt> port)")
     end
+    style wasmtime_components fill:#fff2e6,stroke:#fff2e6
+
+    jit --> runtime
 
     %%%% dependencies for wasmtime-jit
     wasmtime --> runtime
@@ -20,14 +26,14 @@ flowchart TB;
     wasmtime --> parser
     wasmtime ---> memory
     wasmtime ---> stack_trace
-    wasmtime ---> object_file
-    wasmtime ---> serialization
-    wasmtime ---> unwinding
-    wasmtime ---> file
+
+    types ---> serialization
+    environ --> serialization
+    environ --> object_file
+
 
     %%%% dependencies for wasmtime-jit
     jit --> environ
-    jit --> runtime
     jit --> parser
     jit ---> memory
     jit ---> serialization
@@ -35,26 +41,29 @@ flowchart TB;
     jit ---> object_file
     %% jit ----> external_unwind_info %% this unnecessarily complicates the diagram
 
+    wasmtime ---> serialization
+
     %%%% dependencies for wasmtime-runtime
     runtime --> environ
     runtime ------> memory
     runtime ------> signals
     runtime ------> multitasking
-    runtime ------> unwinding
     runtime ------> stack_trace
     runtime ------> randomness
     runtime ------> file
     runtime ------> tls
 
+    %%%% moved here to avoid overlapping arrows
+    wasmtime ---> unwinding
+    runtime ------> unwinding
+    wasmtime ---> file
+
     %%%% dependencies for wasmtime-environ
     environ --> types
     environ --> parser
-    environ --> serialization
-    environ --> object_file
 
     %%%% dependencies for wasmtime-types
     types --> parser
-    types ---> serialization
 
 
     subgraph platform [ ] %% [Platform-Specific Features]
@@ -63,13 +72,14 @@ flowchart TB;
         symbolication[["Symbolication <br> (à la <tt>addr2line</tt>)"]]
         stack_trace[[Stack trace]]
         signals[["Signal Handling"]]
+        serialization[["(De)serialization"]]
         object_file[["Read & write <br> object files"]]
         tls[["Thread-Local Storage (TLS)"]]
         file[["File read"]]
         multitasking[["Multitasking"]]
         randomness[["Randomness"]]
-        serialization[["(De)serialization"]]
     end
+    style platform fill:#E0E0E0,stroke:#E0E0E0
 
 
     subgraph third_party [ ]
@@ -77,9 +87,10 @@ flowchart TB;
         region(("<tt>region</tt>"))
         backtrace(("<tt>backtrace</tt>"))
         rand(("<tt>rand</tt> <br> (<tt>SmallRng</tt>)"))
-        object(("<tt>object</tt>, <br> <tt>gimli</tt>"))
-        serde(("<tt>serde</tt>, <br> <tt>bincode</tt>"))
+        serde(("<tt>serde</tt>,<br> <tt>bincode</tt>"))
+        object(("<tt>object</tt>,<br> <tt>gimli</tt>"))
     end
+    style third_party fill:#cce0ff,stroke:#cce0ff
 
 
     backtrace ---> unwinder
@@ -100,6 +111,7 @@ flowchart TB;
         thread_local{{<tt>thread_local</tt>}}
         theseus_fs{{<tt>theseus_fs</tt>}}
     end
+    style theseus fill:#d9f0e0,stroke:#d9f0e0
 
     unwinding <-..- external_unwind_info
     unwinding <-..- unwinder
@@ -117,4 +129,43 @@ flowchart TB;
     tls <-..- task
     file <-..- theseus_fs
 
+    %%%% wasmtime party node format
+    classDef Wasmtime fill:lightsalmon,stroke:darkred
+    class wasmtime,jit,runtime,environ,types,parser Wasmtime;
 
+    %%%% third party node format
+    classDef ThirdParty fill:lightcyan,stroke:blue
+    class libc,region,backtrace,rand,serde,object ThirdParty;
+
+    %%%% theseus node format
+    classDef Theseus fill:lightgreen,stroke:green
+    class heap,mapped_pages,unwinder,external_unwind_info,exception_handler,task,thread_local,theseus_fs Theseus;
+
+    %%%% features node format
+    classDef Features fill:ghostwhite,stroke:gray
+    class memory,unwinding,symbolication,stack_trace,signals,serialization,object_file,tls,file,multitasking,randomness Features;
+
+
+    subgraph legend [ ]
+        direction TB
+        zero("Wasmtime component")
+        one[[Platform-provided Abstract Feature]]
+        two{{Theseus crate}}
+        three(("Third-party crate"))
+
+        subgraph arrows [ ]
+            direction LR
+            start1[ ] -->|depends on| stop1[ ]
+            start2[ ] -.->|implements feature| stop2[ ]
+            style start1 height:0px;
+            style stop1 height:0px;
+            style start2 height:0px;
+            style stop2 height:0px; 
+        end
+
+        class zero Wasmtime;
+        class one Features;
+        class two Theseus;
+        class three ThirdParty;
+    end
+    style legend fill:white
