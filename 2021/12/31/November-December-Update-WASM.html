@@ -37,7 +37,7 @@
   <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
     <a href="/">
       <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
-      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+      <span style="font-weight: 150;" class="dib ml1 ml0-l">Theseus OS Blog</span>
     </a>
   </div>
 
@@ -71,7 +71,7 @@
 </nav>
 
 <section id="November-December 2021 Update: We have WASM liftoff!" class="white">
-  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+  <div class="w-100 mw-none ph3 mw85-m mw85-l center f3">
     <header>
       <h2>November-December 2021 Update: We have WASM liftoff!</h2>
       <div class="highlight mt2 mb3"></div>
@@ -97,9 +97,9 @@ In the mean time, you can follow its progress in <a href="https://github.com/the
 <p>Second, a simple version of <code>grep</code> version 2.0 compiled to WASM, which demonstrates using WASI's filesystem I/O interface.
 <img src="/images/2021-posts/wgrep.png" alt="grep" /></p>
 <p>Once WASM support is officially in the main branch, we will offer an easier command line interface for loading and executing WASM binaries.</p>
-<h2><a href="#progress-on-porting-wasmtime-to-theseus" aria-hidden="true" class="anchor" id="progress-on-porting-wasmtime-to-theseus"></a>Progress on Porting <code>wasmtime</code> to Theseus</h2>
-<p>While the interpreted WASM project is wrapping up, the port of <code>wasmtime</code> is just getting started.</p>
-<p>As described in <a href="https://docs.wasmtime.dev/contributing-architecture.html"><code>wasmtime</code>'s documentation</a>, the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
+<h2><a href="#progress-on-porting-wasmtime-to-theseus" aria-hidden="true" class="anchor" id="progress-on-porting-wasmtime-to-theseus"></a>Progress on Porting Wasmtime to Theseus</h2>
+<p>While the interpreted WASM project is wrapping up, the port of Wasmtime is just getting started.</p>
+<p>As described in <a href="https://docs.wasmtime.dev/contributing-architecture.html">Wasmtime's documentation</a>, the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
 The top-level crate is aptly named <code>wasmtime</code>, and it primarily exposes a safe API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them.</p>
 <h3><a href="#bottom-up-approach----off-to-a-strong-start" aria-hidden="true" class="anchor" id="bottom-up-approach----off-to-a-strong-start"></a>Bottom-up approach -- off to a strong start</h3>
 <p>We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
@@ -125,7 +125,7 @@ So far, we have been able to quickly adapt the following bottom-most crates (sho
 </li>
 </ul>
 <h3><a href="#looking-forward-in-wasmtime" aria-hidden="true" class="anchor" id="looking-forward-in-wasmtime"></a>Looking forward in (wasm)time</h3>
-<p>The main challenge in porting <code>wasmtime</code> to Theseus is porting the <code>wasmtime-runtime</code> crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
+<p>The main challenge in porting Wasmtime to Theseus is porting the <code>wasmtime-runtime</code> crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
 This crate is massive and will likely take months to complete, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.</p>
 <p>We'll start by tackling the main dependencies of <code>wasmtime-runtime</code>, most of which are based around legacy POSIX-style interfaces and traditional OS platform abstractions:</p>
 <ul>

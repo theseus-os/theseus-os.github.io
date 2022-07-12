@@ -65,7 +65,7 @@ section {
     display: inline-block; }
     section header h2 {
       font-size: 2.6em;
-      font-family: "Alfa Slab One", serif;
+      font-family: "Patua One", serif;
       margin: 0;
       padding: 0;
       letter-spacing: 1px; }
@@ -75,7 +75,7 @@ header h1, section h2 {
   position: relative; }
 
 header h1 {
-  font-family: "Alfa Slab One", serif;
+  font-family: "Patua One", serif;
   font-size: 8rem;
   margin-bottom: 0;
   margin-top: 0; }
@@ -94,8 +94,8 @@ ul.nav, ul.nav li {
 
 div.brand {
   color: #13394b;
-  font-family: "Alfa Slab One", serif;
-  font-size: 3rem;
+  font-family: "Patua One", serif;
+  font-size: 3.5rem;
   text-decoration: none;
   margin-top: 3px; }
   div.brand a {
@@ -126,6 +126,7 @@ div.brand {
     .white .button.button-secondary:hover, .white .button.button-secondary:focus {
       border-color: #13394b; }
   .white code {
+    font-size: 0.9em;
     color: black;
     background-color: rgba(19, 57, 75, 0.05);
     border: 1px solid rgba(19, 57, 75, 0.25); }
@@ -209,21 +210,25 @@ footer .attribution {
 
 h3, .post h2, header h2 {
   display: inline-block;
+  font-family: "Patua One", serif;
   font-weight: 800;
   font-size: 1.8em;
   letter-spacing: normal; }
 
 h4 {
   display: inline-block;
+  font-family: "Patua One", serif;
   font-weight: 800;
   font-size: 1.6em;
   letter-spacing: normal; }
 
 .post h2 {
+  font-family: "Patua One", serif;
   font-size: 2em; }
 
 .post h3 {
-  display: block; }
+  display: block;
+  font-family: "Patua One", serif; }
 
 .post img {
   display: block;
@@ -239,7 +244,8 @@ h4 {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3); }
 
 header h1 {
-  letter-spacing: 1px; }
+  letter-spacing: 1px;
+  font-family: "Patua One", serif; }
 
 .highlight {
   height: 12px;

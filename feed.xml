@@ -10,78 +10,78 @@
         <name>Maintained by Kevin Boos and the Theseus OS Maintainers.</name>
         <uri>https://github.com/theseus-os/</uri>
     </author>
-    <updated>2022-07-11T19:52:22+00:00</updated>
+    <updated>2022-07-12T00:41:02+00:00</updated>
 
     
     <entry>
-        <title>Porting wasmtime to no_std atop Theseus</title>
-        <link rel="alternate" href="https://theseus-os.github.io/2022/06/21/wasmtime-complete-no_std-port.html" type="text/html" title="Porting wasmtime to no_std atop Theseus" />
+        <title>Porting Wasmtime to no_std atop Theseus</title>
+        <link rel="alternate" href="https://theseus-os.github.io/2022/06/21/wasmtime-complete-no_std-port.html" type="text/html" title="Porting Wasmtime to no_std atop Theseus" />
         <published>2022-06-21T00:00:00+00:00</published>
         <updated>2022-06-21T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/2022/06/21/wasmtime-complete-no_std-port.html</id>
-        <content type="html" xml:base="https://theseus-os.github.io/2022/06/21/wasmtime-complete-no_std-port.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#bringing-wasmtime-to-no_std&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;bringing-wasmtime-to-no_std&quot;&gt;&lt;/a&gt;Bringing &lt;code&gt;wasmtime&lt;/code&gt; to &lt;code&gt;no_std&lt;/code&gt;*&lt;/h2&gt;
-&lt;p&gt;🎉🎉 &lt;code&gt;wasmtime&lt;/code&gt; now builds and runs on Theseus! 🎉🎉&lt;/p&gt;
-&lt;p&gt;This is the first port of &lt;code&gt;wasmtime&lt;/code&gt; to a &lt;code&gt;no_std&lt;/code&gt;* environment, to the best of our knowledge, despite it being a &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/75&quot;&gt;very&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/pull/2024&quot;&gt;hot&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/pull/554&quot;&gt;topic&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/3495&quot;&gt;of&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/3451&quot;&gt;conversation&lt;/a&gt;.
-We completed the initial minimal version of &lt;code&gt;wasmtime&lt;/code&gt; and &lt;a href&#x3D;&quot;https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916&quot;&gt;successfully ran it on Theseus on May 17th, 2022&lt;/a&gt;.&lt;/p&gt;
+        <content type="html" xml:base="https://theseus-os.github.io/2022/06/21/wasmtime-complete-no_std-port.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#bringing-wasmtime-to-no_std&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;bringing-wasmtime-to-no_std&quot;&gt;&lt;/a&gt;Bringing Wasmtime to &lt;code&gt;no_std&lt;/code&gt;*&lt;/h2&gt;
+&lt;p&gt;🎉🎉 Wasmtime now builds and runs on Theseus! 🎉🎉&lt;/p&gt;
+&lt;p&gt;This is the first port of Wasmtime to a &lt;code&gt;no_std&lt;/code&gt;* environment, to the best of our knowledge, despite it being a &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/75&quot;&gt;very&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/pull/2024&quot;&gt;hot&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/pull/554&quot;&gt;topic&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/3495&quot;&gt;of&lt;/a&gt; &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime/issues/3451&quot;&gt;conversation&lt;/a&gt;.
+We completed the initial minimal version of Wasmtime and &lt;a href&#x3D;&quot;https://github.com/kevinaboos/Theseus/commit/39a647581fdb7f259559400b6222613e3f914916&quot;&gt;successfully ran it on Theseus on May 17th, 2022&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;This milestone marks the culmination of a very long journey, as evidenced by our previous several posts on this topic
-and the fact that our initial port started with a version of &lt;code&gt;wasmtime&lt;/code&gt; from mid-October 2021. Yeesh!&lt;/p&gt;
+and the fact that our initial port started with a version of Wasmtime from mid-October 2021. Yeesh!&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;../../../2021/11/01/October-Update-WASM.html&quot;&gt;November 2021: Introducing the goal of running WASM on Theseus&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href&#x3D;&quot;../../../2021/12/31/November-December-Update-WASM.html#progress-on-porting-wasmtime-to-theseus&quot;&gt;December 2021: Porting the low-level &amp;quot;simple&amp;quot; &lt;code&gt;wasmtime&lt;/code&gt; crates and dependencies&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href&#x3D;&quot;../../../2021/12/31/November-December-Update-WASM.html#progress-on-porting-wasmtime-to-theseus&quot;&gt;December 2021: Porting the low-level &amp;quot;simple&amp;quot; Wasmtime crates and dependencies&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;../../../2022/02/03/wasmtime-progress-update.html&quot;&gt;February 2022: Porting the largest crate, &lt;code&gt;wasmtime-runtime&lt;/code&gt;, Part 1&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href&#x3D;&quot;../../../2022/04/12/wasmtime-progress-update-2.html&quot;&gt;April 2022: Porting &lt;code&gt;wasmtime-runtime&lt;/code&gt;, Part 2&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;This post: Porting the top-level &lt;code&gt;wasmtime&lt;/code&gt; crate and tying everything together&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;In this post, we aim to&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;Provide a high-level overview of &lt;code&gt;wasmtime&lt;/code&gt; and its multi-crate architecture,&lt;/li&gt;
-&lt;li&gt;Enumerate the changes needed to build &lt;code&gt;wasmtime&lt;/code&gt; on &lt;code&gt;no_std&lt;/code&gt;*, and&lt;/li&gt;
-&lt;li&gt;Itemize the dependencies/functionality that &lt;code&gt;wasmtime&lt;/code&gt; requires from the underlying platform.&lt;/li&gt;
+&lt;li&gt;Provide a high-level overview of Wasmtime and its multi-crate architecture,&lt;/li&gt;
+&lt;li&gt;Enumerate the changes needed to build Wasmtime on &lt;code&gt;no_std&lt;/code&gt;*, and&lt;/li&gt;
+&lt;li&gt;Itemize the dependencies/functionality that Wasmtime requires from the underlying platform.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;While we don&#x27;t intend this to be a step-by-step porting tutorial, we do hope it makes it easier to port and run &lt;code&gt;wasmtime&lt;/code&gt; on other platforms in the future.&lt;/p&gt;
+&lt;p&gt;While we don&#x27;t intend this to be a step-by-step porting tutorial, we do hope it makes it easier to port and run Wasmtime on other platforms in the future.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Why is there an asterisk&lt;/strong&gt; by &lt;code&gt;no_std&lt;/code&gt;?&lt;/p&gt;
 &lt;p&gt;Theseus doesn&#x27;t yet support the &lt;code&gt;std&lt;/code&gt; library, so this is a legitimate &lt;code&gt;no_std&lt;/code&gt; port.
 However, one cannot simply take this port and run it within any other &lt;code&gt;no_std&lt;/code&gt; environment,
-because &lt;code&gt;wasmtime&lt;/code&gt; still relies on lots of functionality from the underlying platform.&lt;/p&gt;
-&lt;p&gt;We did have to add some &lt;code&gt;std&lt;/code&gt;-like components to Theseus in order to satisfy &lt;code&gt;wasmtime&lt;/code&gt;&#x27;s needs, as shown below.&lt;/p&gt;
+because Wasmtime still relies on lots of functionality from the underlying platform.&lt;/p&gt;
+&lt;p&gt;We did have to add some &lt;code&gt;std&lt;/code&gt;-like components to Theseus in order to satisfy Wasmtime&#x27;s needs, as shown below.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&amp;quot;C&#x27;mon, just skip to the &lt;s&gt;recipe&lt;/s&gt; code already!&amp;quot;&lt;/p&gt;
-&lt;p&gt;No problem, &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88&quot;&gt;here is the full changeset to &lt;code&gt;wasmtime&lt;/code&gt;&lt;/a&gt;.
+&lt;p&gt;No problem, &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/compare/35cdd53989b5eaa01691aac915d60cf609776ab6..c05b37c41b363008b9ff84b3493ea6d4f067cf88&quot;&gt;here is the full changeset to Wasmtime&lt;/a&gt;.
 Note that this doesn&#x27;t include the many changes and extensions we made to Theseus to support this; those are described in the rest of the article.&lt;/p&gt;
-&lt;h2&gt;&lt;a href&#x3D;&quot;#1-summary-of-wasmtimes-key-parts&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;1-summary-of-wasmtimes-key-parts&quot;&gt;&lt;/a&gt;1. Summary of &lt;code&gt;wasmtime&lt;/code&gt;&#x27;s key parts&lt;/h2&gt;
-&lt;p&gt;As described in &lt;a href&#x3D;&quot;https://docs.wasmtime.dev/contributing-architecture.html&quot;&gt;&lt;code&gt;wasmtime&lt;/code&gt;&#x27;s documentation&lt;/a&gt;, the project is architected as one top-level user-facing crate called &lt;code&gt;wasmtime&lt;/code&gt; that re-exports and connects together key functionality from several internal crates.&lt;/p&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#1-summary-of-wasmtimes-key-parts&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;1-summary-of-wasmtimes-key-parts&quot;&gt;&lt;/a&gt;1. Summary of Wasmtime&#x27;s key parts&lt;/h2&gt;
+&lt;p&gt;As described in &lt;a href&#x3D;&quot;https://docs.wasmtime.dev/contributing-architecture.html&quot;&gt;Wasmtime&#x27;s documentation&lt;/a&gt;, the project is architected as one top-level user-facing crate called &lt;code&gt;wasmtime&lt;/code&gt; that re-exports and connects together key functionality from several internal crates.&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;wasmtime-cli&lt;/code&gt;: a CLI app that offers simple interactive access to standard &lt;code&gt;wasmtime&lt;/code&gt; features&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;wasmtime-cli&lt;/code&gt;: a CLI app that offers simple interactive access to standard Wasmtime features&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime&lt;/code&gt;: exposes a safe, embeddable API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime-jit&lt;/code&gt;: facilitates JIT compilation and execution of WASM modules using a compiler&#x27;s code generator (currently cranelift)&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime-runtime&lt;/code&gt;: implements the majority of the runtime logic for executing WASM binaries atop of a give host platform&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime-environ&lt;/code&gt;: standalone abstract definitions of core WASM concepts and environment types, enabling integration with the cranelift backend&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;wasmtime-types&lt;/code&gt;: definitions for core WASM types and execution concepts&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;wasmparser&lt;/code&gt;: an external (non-&lt;code&gt;wasmtime&lt;/code&gt;) tool for parsing WASM binaries&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;wasmparser&lt;/code&gt;&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;: an external (non-Wasmtime) tool for parsing WASM binaries&lt;/li&gt;
 &lt;/ul&gt;
 &lt;!-- * &#x60;cranelift-entity&#x60;: core data structures used by the Cranelift code generator   --&gt;
-&lt;p&gt;The diagram below depicts the above major components of &lt;code&gt;wasmtime&lt;/code&gt;&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; and their dependencies, with a focus on those that &lt;em&gt;did not already support &lt;code&gt;no_std&lt;/code&gt;&lt;/em&gt; when our work began or required other forms of modification.
+&lt;p&gt;The diagram below depicts the above major components of Wasmtime&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; and their dependencies, with a focus on those that &lt;em&gt;did not already support &lt;code&gt;no_std&lt;/code&gt;&lt;/em&gt; when our work began or required other forms of modification.
 This intentionally excludes ubiquitous dependencies like error handling, heap allocation, and logging to keep the graph legible (...ish).
 Note that the project also contains many other crates that realize optional features, such as module caching, fibers, etc, but these (and &lt;code&gt;wasmtime-cli&lt;/code&gt;) aren&#x27;t necessary for an initial port.&lt;/p&gt;
 &lt;p&gt;TODO: use better formatting and coloring for the nodes/edges of this diagram. Also, create a key/legend for what the arrow and nodes and subgraphs represent.&lt;/p&gt;
-&lt;div align&#x3D;&quot;center&quot;&gt;&lt;em&gt;(click the diagram to open it in a full-size window)&lt;/em&gt;&lt;/div&gt;
 &lt;a href&#x3D;&quot;/images/2022-posts/wasmtime_diagram.svg&quot; alt&#x3D;&quot;Wasmtime architecture diagram with dependencies&quot; target&#x3D;&quot;_blank&quot;&gt;
   &lt;img align&#x3D;&quot;center&quot; src&#x3D;&quot;/images/2022-posts/wasmtime_diagram.svg&quot;/&gt;
 &lt;/a&gt;
-&lt;h2&gt;&lt;a href&#x3D;&quot;#2-changes-made-to-wasmtime-components&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;2-changes-made-to-wasmtime-components&quot;&gt;&lt;/a&gt;2. Changes made to &lt;code&gt;wasmtime&lt;/code&gt; components&lt;/h2&gt;
+&lt;div align&#x3D;&quot;center&quot;&gt;&lt;em&gt;(click the diagram to open it in a full-size window)&lt;/em&gt;&lt;/div&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#2-changes-made-to-wasmtime-components&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;2-changes-made-to-wasmtime-components&quot;&gt;&lt;/a&gt;2. Changes made to Wasmtime components&lt;/h2&gt;
 &lt;p&gt;We took a bottom-up approach to iteratively port lower-level dependencies until they compiled on &lt;code&gt;no_std&lt;/code&gt; on Theseus, and then moved on to the next highest layer in the dependency stack.
 The lowest-level crates, &lt;code&gt;wasmparser&lt;/code&gt;, &lt;code&gt;wasmtime-types&lt;/code&gt;, and &lt;code&gt;wasmtime-environ&lt;/code&gt; were relatively simple to port to &lt;code&gt;no_std&lt;/code&gt;, requiring only trivial changes &lt;a href&#x3D;&quot;#trivial-yet-tedious-changes-for-nostd-compatibility&quot;&gt;described in the section below&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;By far, the most complex crate to port was &lt;code&gt;wasmtime-runtime&lt;/code&gt;, which has not only myriad dependencies that each need porting, but also plenty of platform-specific code that is necessarily unsafe and quite intricate.
 We have already described our efforts to port &lt;code&gt;wasmtime-runtime&lt;/code&gt; to Theseus in &lt;a href&#x3D;&quot;../../../2022/02/03/wasmtime-progress-update.html&quot;&gt;two previous posts starting here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Moving up, porting &lt;code&gt;wasmtime-jit&lt;/code&gt; and then &lt;code&gt;wasmtime&lt;/code&gt; was fairly straightforward once &lt;code&gt;wasmtime-runtime&lt;/code&gt; was done, as they share many dependencies.
 There were a few issues that needed fixing, as described below, but nothing strenuous.&lt;/p&gt;
-&lt;p&gt;Finally, the real fun begins once all &lt;code&gt;wasmtime&lt;/code&gt; crates are able to be compiled for your platform!
+&lt;p&gt;Finally, the real fun begins once all Wasmtime crates are able to be compiled for your platform!
 You then attempt to run it for the first time only to discover that nothing works and you don&#x27;t know why.&lt;/p&gt;
 &lt;p&gt;Welcome to integration hell! 😈&lt;/p&gt;
 &lt;p&gt;... Ok, time to come clean; it turns out that this wasn&#x27;t so bad. We only had a few days of debugging struggles that centered around differences in how &lt;code&gt;bincode&lt;/code&gt; performs (de)serialization across different versions and how &lt;code&gt;region&lt;/code&gt; handles memory management on Unix vs. Theseus. Both are explained in the following sections.&lt;/p&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#logic-and-structural-changes&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;logic-and-structural-changes&quot;&gt;&lt;/a&gt;Logic and structural changes&lt;/h3&gt;
-&lt;p&gt;As &lt;code&gt;wasmtime&lt;/code&gt; is cross-platform, it contains several platform-specific modules that we must implement for Theseus.
+&lt;p&gt;As Wasmtime is cross-platform, it contains several platform-specific modules that we must implement for Theseus.
 These typically look something like:&lt;/p&gt;
 &lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;if #[cfg(unix)] {
     mod systemv;
@@ -120,7 +120,7 @@ These typically look something like:&lt;/p&gt;
 }
 &lt;/code&gt;&lt;/pre&gt;
 &lt;ul&gt;
-&lt;li&gt;A &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/blob/c05b37c41b363008b9ff84b3493ea6d4f067cf88/crates/runtime/src/mmap.rs#L172-L196&quot;&gt;Theseus-specific version of &lt;code&gt;Mmap::accessible_reserved()&lt;/code&gt;&lt;/a&gt; and other related functions was also necessary to accommodate the changed &lt;code&gt;Mmap&lt;/code&gt; struct.&lt;/li&gt;
+&lt;li&gt;A &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/blob/c05b37c41b363008b9ff84b3493ea6d4f067cf88/crates/runtime/src/mmap.rs#L172-L196&quot;&gt;Theseus-specific version of &lt;code&gt;Mmap::accessible_reserved()&lt;/code&gt;&lt;/a&gt; and other related functions were also necessary to accommodate the changed &lt;code&gt;Mmap&lt;/code&gt; struct.&lt;/li&gt;
 &lt;li&gt;This design choice avoids unsafe or leaky code that would be required to get around the &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/memory/struct.MappedPages.html&quot;&gt;ownership-based type invariants guaranteed by &lt;code&gt;MappedPages&lt;/code&gt;&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
@@ -188,11 +188,11 @@ In fact I&#x27;ve already suggested this in a presentation to select Rust team m
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2&gt;&lt;a href&#x3D;&quot;#3-full-list-of-functionality-needed-to-support-wasmtime&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;3-full-list-of-functionality-needed-to-support-wasmtime&quot;&gt;&lt;/a&gt;3. Full list of functionality needed to support &lt;code&gt;wasmtime&lt;/code&gt;&lt;/h2&gt;
+&lt;h2&gt;&lt;a href&#x3D;&quot;#3-full-list-of-functionality-needed-to-support-wasmtime&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;3-full-list-of-functionality-needed-to-support-wasmtime&quot;&gt;&lt;/a&gt;3. Full list of functionality needed to support Wasmtime&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Heap allocation for &lt;code&gt;alloc&lt;/code&gt; types
 &lt;ul&gt;
-&lt;li&gt;Sorry, you ain&#x27;t gonna run &lt;code&gt;wasmtime&lt;/code&gt; without a heap!&lt;/li&gt;
+&lt;li&gt;Sorry, you ain&#x27;t gonna run Wasmtime without a heap!&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;Basic memory management: allocating memory regions, creating memory mappings, etc.
@@ -234,7 +234,7 @@ In fact I&#x27;ve already suggested this in a presentation to select Rust team m
 &lt;/li&gt;
 &lt;li&gt;Multitasking
 &lt;ul&gt;
-&lt;li&gt;Full preemption is essentially required, as cooperative multitasking would require a significant rework of &lt;code&gt;wasmtime&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Full preemption is essentially required, as cooperative multitasking would require a significant rework of Wasmtime&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;Thread-Local Storage (TLS), see &lt;a href&#x3D;&quot;../../../2022/02/03/wasmtime-progress-update.html#supporting-thread-local-storage-on-theseus&quot;&gt;prior post&lt;/a&gt;
@@ -283,13 +283,13 @@ In fact I&#x27;ve already suggested this in a presentation to select Rust team m
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2&gt;&lt;a href&#x3D;&quot;#concluding-remarks--next-steps&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;concluding-remarks--next-steps&quot;&gt;&lt;/a&gt;Concluding remarks + next steps&lt;/h2&gt;
-&lt;p&gt;Phew, that was a long ride — but it&#x27;s only the beginning of the journey to bring &lt;code&gt;wasmtime&lt;/code&gt; to Theseus.
+&lt;p&gt;Phew, that was a long ride — but it&#x27;s only the beginning of the journey to bring Wasmtime to Theseus.
 We still have several optional features to port and implement, starting with full support for live JIT compilation of WASM modules.
-We then plan to integrate Theseus&#x27;s &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/blob/0e61ea815cbf2dc4857b8e484a5f39587e6bc25a/kernel/wasi_interpreter/src/wasi_syscalls.rs&quot;&gt;existing WASI implementation&lt;/a&gt; with our port of &lt;code&gt;wasmtime&lt;/code&gt; such that we can more easily run legacy programs in a WASM environment.&lt;/p&gt;
+We then plan to integrate Theseus&#x27;s &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/blob/0e61ea815cbf2dc4857b8e484a5f39587e6bc25a/kernel/wasi_interpreter/src/wasi_syscalls.rs&quot;&gt;existing WASI implementation&lt;/a&gt; with our port of Wasmtime such that we can more easily run legacy programs in a WASM environment.&lt;/p&gt;
 &lt;p&gt;This is a major addition to a &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/book/design/idea.html&quot;&gt;safe-language OS&lt;/a&gt; like Theseus, which runs everything in a single address space and single privilege level, foregoing hardware protection in favor of reliance on language-provided safety to realize isolation between both applications and system components.
 Importantly, this will enable Theseus to safely execute unsafe code or legacy components written in unsafe languages, using WASM as a &amp;quot;sandbox&amp;quot; to prevent unsafe code from circumventing the type-based restrictions  ensured and obeyed by the rest of the OS&#x27;s safe Rust environment.&lt;/p&gt;
-&lt;p&gt;Further down the line, we would like to propose design changes to &lt;code&gt;wasmtime&lt;/code&gt; such that it makes greater usage of traits to abstract away its platform-specific dependencies as much as possible.
-This would make it easier to port &lt;code&gt;wasmtime&lt;/code&gt; to new platforms, and ideally reduce the amount of mandatory unsafe code.&lt;/p&gt;
+&lt;p&gt;Further down the line, we would like to propose design changes to Wasmtime such that it makes greater usage of traits to abstract away its platform-specific dependencies as much as possible.
+This would make it easier to port Wasmtime to new platforms, and ideally reduce the amount of mandatory unsafe code.&lt;/p&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#small-demo&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;small-demo&quot;&gt;&lt;/a&gt;Small demo&lt;/h3&gt;
 &lt;p&gt;Given the following very simple WASM module &lt;code&gt;hello.wat&lt;/code&gt;:&lt;/p&gt;
 &lt;pre&gt;&lt;code class&#x3D;&quot;language-wasm&quot;&gt;(module
@@ -325,12 +325,12 @@ fn hello(cwasm_file_contents: &amp;amp;[u8]) -&amp;gt; Result&amp;lt;...&amp;gt;
 }
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;If all goes according to plan, you&#x27;ll see the expected output below:&lt;/p&gt;
-&lt;img align&#x3D;&quot;left&quot; src&#x3D;&quot;/images/2022-posts/test_wasmtime_screenshot.png&quot; alt&#x3D;&quot;wasmtime on Theseus screenshot&quot; width&#x3D;&quot;500&quot;/&gt;
+&lt;img style&#x3D;&quot;margin:4px&quot; align&#x3D;&quot;left&quot; src&#x3D;&quot;/images/2022-posts/test_wasmtime_screenshot.png&quot; alt&#x3D;&quot;wasmtime on Theseus screenshot&quot; width&#x3D;&quot;500&quot;/&gt;
 &lt;br clear&#x3D;&quot;all&quot;&gt;
 &lt;section class&#x3D;&quot;footnotes&quot;&gt;
 &lt;ol&gt;
 &lt;li id&#x3D;&quot;fn1&quot;&gt;
-&lt;p&gt;For simplicity, we depict &lt;code&gt;wasmparser&lt;/code&gt; as part of the set of &lt;code&gt;wasmtime&lt;/code&gt; crates, even though it is actually part of the separate &lt;code&gt;wasm-tools&lt;/code&gt; project. &lt;a href&#x3D;&quot;#fnref1&quot; class&#x3D;&quot;footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For simplicity, we depict &lt;code&gt;wasmparser&lt;/code&gt; as part of the set of Wasmtime crates, even though it is actually part of the separate &lt;code&gt;wasm-tools&lt;/code&gt; project. &lt;a href&#x3D;&quot;#fnref1&quot; class&#x3D;&quot;footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;/section&gt;
@@ -439,7 +439,7 @@ If in the U.S., you will be hired as a standard 1099 independent contractor, as 
 &lt;li&gt;Extending support for running WebAssembly (WASM) on Theseus
 &lt;ul&gt;
 &lt;li&gt;Supporting more WASM interfaces, e.g., WASI extensions&lt;/li&gt;
-&lt;li&gt;Improving WASM performance (e.g., with &lt;code&gt;wasmtime&lt;/code&gt;) atop Theseus&lt;/li&gt;
+&lt;li&gt;Improving WASM performance (e.g., with Wasmtime) atop Theseus&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;Creating a generic universal driver abstraction for cross-OS driver reuse
@@ -508,14 +508,14 @@ If in the U.S., you will be hired as a standard 1099 independent contractor, as 
     </entry>
     
     <entry>
-        <title>More progress porting wasmtime to Theseus</title>
-        <link rel="alternate" href="https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html" type="text/html" title="More progress porting wasmtime to Theseus" />
+        <title>More progress porting Wasmtime to Theseus</title>
+        <link rel="alternate" href="https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html" type="text/html" title="More progress porting Wasmtime to Theseus" />
         <published>2022-04-12T00:00:00+00:00</published>
         <updated>2022-04-12T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html</id>
         <content type="html" xml:base="https://theseus-os.github.io/2022/04/12/wasmtime-progress-update-2.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#the-quest-port-continues&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-quest-port-continues&quot;&gt;&lt;/a&gt;The &lt;s&gt;quest&lt;/s&gt; port continues&lt;/h2&gt;
-&lt;p&gt;This post covers the highlights of our ongoing work to port &lt;code&gt;wasmtime&lt;/code&gt; to Theseus; see the previous post(s) for more information.
-Interested folks can &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/tree/theseus&quot;&gt;follow along with the ported &lt;code&gt;wasmtime&lt;/code&gt; code here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This post covers the highlights of our ongoing work to port Wasmtime to Theseus; see the previous post(s) for more information.
+Interested folks can &lt;a href&#x3D;&quot;https://github.com/theseus-os/wasmtime/tree/theseus&quot;&gt;follow along with the ported Wasmtime code here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;📢 Good news: &lt;code&gt;wasmtime-runtime&lt;/code&gt; now builds on Theseus! 📢&lt;/p&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#completed-initial-port-of-wasmtime-runtime&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;completed-initial-port-of-wasmtime-runtime&quot;&gt;&lt;/a&gt;Completed initial port of &lt;code&gt;wasmtime-runtime&lt;/code&gt;!&lt;/h3&gt;
 &lt;p&gt;Last time we left off having finished several key features to support the needs of the &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate:&lt;/p&gt;
@@ -592,7 +592,7 @@ The key missing parts were:&lt;/p&gt;
 This trace is used to both:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Traverse the call stack to see if any stack frames from WASM code exist, and&lt;/li&gt;
-&lt;li&gt;Provide the user or caller of &lt;code&gt;wasmtime&lt;/code&gt; with more context about a runtime failure.&lt;/li&gt;
+&lt;li&gt;Provide the user or caller of Wasmtime with more context about a runtime failure.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Porting &lt;code&gt;backtrace&lt;/code&gt; was relatively simple; the primary changes required were to publicly expose more details about Theseus&#x27;s custom unwinder.
 Feel free to &lt;a href&#x3D;&quot;https://github.com/theseus-os/backtrace-rs/compare/5e15d73..c56bae0&quot;&gt;check out the full changeset here&lt;/a&gt;, summarized below:&lt;/p&gt;
@@ -618,10 +618,10 @@ Feel free to &lt;a href&#x3D;&quot;https://github.com/theseus-os/backtrace-rs/co
 &lt;p&gt;The one remaining feature that our port of &lt;code&gt;backtrace&lt;/code&gt; lacks is connecting a resolved symbol to its location: file path, line number, and column number.
 This is conceptually easy to do but requires debug information to be parsed from an object file.
 Although &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/debug_info/index.html&quot;&gt;Theseus does support parsing DWARF debug info&lt;/a&gt;, it isn&#x27;t always available because debug info is typically stripped from object files to keep their size down.
-Fortunately, the &lt;code&gt;backtrace&lt;/code&gt; crate treats this information as optional, and thus &lt;code&gt;wasmtime&lt;/code&gt; doesn&#x27;t require it to be available, so we can simply return &lt;code&gt;None&lt;/code&gt; when asked for symbol location details.&lt;/p&gt;
+Fortunately, the &lt;code&gt;backtrace&lt;/code&gt; crate treats this information as optional, and thus Wasmtime doesn&#x27;t require it to be available, so we can simply return &lt;code&gt;None&lt;/code&gt; when asked for symbol location details.&lt;/p&gt;
 &lt;h4&gt;&lt;a href&#x3D;&quot;#the-path-forwards&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-path-forwards&quot;&gt;&lt;/a&gt;The &lt;code&gt;Path&lt;/code&gt; Forwards&lt;/h4&gt;
-&lt;p&gt;Many &lt;code&gt;wasmtime&lt;/code&gt; crates use &lt;code&gt;std::path::{Path, PathBuf}&lt;/code&gt; to refer to WASM module files that are JIT-compiled and loaded into a &lt;code&gt;wasmtime&lt;/code&gt; engine.
-Thus, we must implement a version of path types that are API-compatible with Rust&#x27;s &lt;code&gt;std::path&lt;/code&gt; types in order to minimize the number of changes to &lt;code&gt;wasmtime&lt;/code&gt; itself.
+&lt;p&gt;Many Wasmtime crates use &lt;code&gt;std::path::{Path, PathBuf}&lt;/code&gt; to refer to WASM module files that are JIT-compiled and loaded into a Wasmtime engine.
+Thus, we must implement a version of path types that are API-compatible with Rust&#x27;s &lt;code&gt;std::path&lt;/code&gt; types in order to minimize the number of changes to Wasmtime itself.
 You can find &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/6a4ba4f42ae407afe71dd77042fa15a523e15134&quot;&gt;the code for that here&lt;/a&gt;, which is primarily a quick &amp;amp; dirty copy of the code from &lt;code&gt;std::path&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Theseus already offers &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/doc/path/struct.Path.html&quot;&gt;its own &lt;code&gt;Path&lt;/code&gt; type&lt;/a&gt;, which is similar but not identical to those in Rust &lt;code&gt;std::path&lt;/code&gt;.
 All we need is a simple glue code layer between &lt;code&gt;std::PathBuf&lt;/code&gt; and Theseus&#x27;s &lt;code&gt;path::Path&lt;/code&gt;.&lt;/p&gt;
@@ -632,7 +632,7 @@ pub type OsStr &#x3D; str;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/blockquote&gt;
 &lt;h4&gt;&lt;a href&#x3D;&quot;#relax-and-unwind&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;relax-and-unwind&quot;&gt;&lt;/a&gt;Relax and unwind&lt;/h4&gt;
-&lt;p&gt;The &lt;code&gt;resume_unwind()&lt;/code&gt; function is used in &lt;code&gt;wasmtime&lt;/code&gt; to carry on with the unwinding procedure after it has been &lt;em&gt;caught&lt;/em&gt;. This is currently only used in the runtime&#x27;s trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;resume_unwind()&lt;/code&gt; function is used in Wasmtime to carry on with the unwinding procedure after it has been &lt;em&gt;caught&lt;/em&gt;. This is currently only used in the runtime&#x27;s trap handling logic, which essentially continues unwinding after a trap that stemmed from a Rust-level panic, i.e., one deemed irrelevant to handling in-WASM traps.&lt;/p&gt;
 &lt;p&gt;Here is Theseus&#x27;s &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/ca960df2a61d807f23514469a94355ee2689c556#diff-d17ff1523da38049c7e75df2747fc33e3a18dea8c6a57ecb1ba5590ff6f1a699&quot;&gt;implementation of &lt;code&gt;resume_unwind()&lt;/code&gt; with code that tests it&lt;/a&gt;.
 Although this is conceptually tricky, the implementation is quite straightforward — simply start unwinding from the current point without starting from the regular panic handler.
 You can test this in Theseus by invoking the test program &lt;code&gt;unwind_test -c&lt;/code&gt;.&lt;/p&gt;
@@ -649,10 +649,10 @@ theseus_catch_unwind::resume_unwind(
 Thus, Theseus&#x27;s panic payloads expect a &lt;a href&#x3D;&quot;&quot;&gt;&lt;code&gt;KillReason&lt;/code&gt;&lt;/a&gt; rather than an erased type &lt;code&gt;Box&amp;lt;Any&amp;gt;&lt;/code&gt;, so we must handle that minor difference.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h4&gt;&lt;a href&#x3D;&quot;#oh-an-error-occurred-anyway-anyhow&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;oh-an-error-occurred-anyway-anyhow&quot;&gt;&lt;/a&gt;Oh, an &lt;code&gt;Error&lt;/code&gt; Occurred? &lt;s&gt;Anyway&lt;/s&gt; Anyhow...&lt;/h4&gt;
-&lt;p&gt;In yet another tribute to D. Tolnay, &lt;code&gt;wasmtime&lt;/code&gt; uses his superb &lt;code&gt;anyhow&lt;/code&gt; and &lt;code&gt;thiserror&lt;/code&gt; crates for convenient error handling across nearly every source file and function.
+&lt;p&gt;In yet another tribute to D. Tolnay, Wasmtime uses his superb &lt;code&gt;anyhow&lt;/code&gt; and &lt;code&gt;thiserror&lt;/code&gt; crates for convenient error handling across nearly every source file and function.
 While &lt;code&gt;anyhow&lt;/code&gt; technically supports &lt;code&gt;no_std&lt;/code&gt; environments like Theseus, it cannot accommodate the same API.&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Thus, we must change &lt;strong&gt;&lt;em&gt;every&lt;/em&gt;. &lt;em&gt;single&lt;/em&gt;. &lt;em&gt;usage&lt;/em&gt;.&lt;/strong&gt; of &lt;code&gt;anyhow&lt;/code&gt; in the whole &lt;code&gt;wasmtime&lt;/code&gt; code base.&lt;/p&gt;
+&lt;p&gt;Thus, we must change &lt;strong&gt;&lt;em&gt;every&lt;/em&gt;. &lt;em&gt;single&lt;/em&gt;. &lt;em&gt;usage&lt;/em&gt;.&lt;/strong&gt; of &lt;code&gt;anyhow&lt;/code&gt; in the whole Wasmtime code base.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;The majority of the changes simply require use to add this snippet to any &lt;code&gt;Result&lt;/code&gt; type before returning or unwrapping it:&lt;/p&gt;
 &lt;pre&gt;&lt;code class&#x3D;&quot;language-rust&quot;&gt;.map_err(anyhow::Error::msg)?  // convert the &#x60;Err&#x60; into &#x60;anyhow::Error&#x60;
@@ -664,7 +664,7 @@ This rough edge is currently unavoidable, as evidenced by &lt;a href&#x3D;&quot;
 &lt;p&gt;💤💭💤 We dream of the day when &lt;a href&#x3D;&quot;https://github.com/yaahc&quot;&gt;@Jane Lusby&lt;/a&gt;&#x27;s excellent work on moving the &lt;code&gt;Error&lt;/code&gt; trait into &lt;code&gt;core&lt;/code&gt; is completed! Once that lands, we won&#x27;t need to bother with all this pablum.&lt;/p&gt;
 &lt;h4&gt;&lt;a href&#x3D;&quot;#the-last-jedi-dependency-signal-handling&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;the-last-jedi-dependency-signal-handling&quot;&gt;&lt;/a&gt;The Last &lt;s&gt;Jedi&lt;/s&gt; Dependency: Signal Handling&lt;/h4&gt;
 &lt;p&gt;The last remaining feature needed to finish porting &lt;code&gt;wasmtime-runtime&lt;/code&gt; is signal handling.
-This is needed for &lt;code&gt;wasmtime&lt;/code&gt; to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.&lt;/p&gt;
+This is needed for Wasmtime to be able to catch traps that occur when executing WASM code that was JIT-compiled into native code, among other purposes.&lt;/p&gt;
 &lt;p&gt;Theseus doesn&#x27;t offer POSIX-like signals because they&#x27;re unsafe and unnecessary in a safe-language OS, but it does implement handlers for &lt;a href&#x3D;&quot;https://wiki.osdev.org/Exceptions&quot;&gt;CPU exceptions&lt;/a&gt;, e.g., page faults, general protection faults, etc.
 However, we previously did not allow third-party crates to register handlers (callbacks)&lt;/p&gt;
 &lt;p&gt;Registering  &amp;quot;signal&amp;quot; (CPU exception) handlers is now supported in Theseus as of &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/09ccbfc644da93e98ef11c9532ef926f1ee7b4f4&quot;&gt;commit &lt;/a&gt;.
@@ -758,8 +758,8 @@ Once those are complete, we will publish a longer-form post about the journey to
         <published>2022-02-03T00:00:00+00:00</published>
         <updated>2022-02-03T00:00:00+00:00</updated>
         <id>https://theseus-os.github.io/2022/02/03/wasmtime-progress-update.html</id>
-        <content type="html" xml:base="https://theseus-os.github.io/2022/02/03/wasmtime-progress-update.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#porting-wasmtime-runtime-the-key-wasmtime-crate&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;porting-wasmtime-runtime-the-key-wasmtime-crate&quot;&gt;&lt;/a&gt;Porting &lt;code&gt;wasmtime-runtime&lt;/code&gt;, the key &lt;code&gt;wasmtime&lt;/code&gt; crate&lt;/h2&gt;
-&lt;p&gt;A &lt;a href&#x3D;&quot;../../../2021/12/31/November-December-Update-WASM.html&quot;&gt;previous post from late 2021&lt;/a&gt; chronicled our ongoing journey to port &lt;code&gt;wasmtime&lt;/code&gt; to Theseus.
+        <content type="html" xml:base="https://theseus-os.github.io/2022/02/03/wasmtime-progress-update.html">&lt;h2&gt;&lt;a href&#x3D;&quot;#porting-wasmtime-runtime-the-key-wasmtime-crate&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;porting-wasmtime-runtime-the-key-wasmtime-crate&quot;&gt;&lt;/a&gt;Porting &lt;code&gt;wasmtime-runtime&lt;/code&gt;, the key Wasmtime crate&lt;/h2&gt;
+&lt;p&gt;A &lt;a href&#x3D;&quot;../../../2021/12/31/November-December-Update-WASM.html&quot;&gt;previous post from late 2021&lt;/a&gt; chronicled our ongoing journey to port Wasmtime to Theseus.
 While our bottom-up approach got off to a strong start, we quickly encountered our first major challenge when examining the &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate, as it contains many dependencies on platform-specific and legacy system interfaces:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Unix-like memory mapping and protection&lt;/li&gt;
@@ -817,7 +817,7 @@ While our bottom-up approach got off to a strong start, we quickly encountered o
 &lt;p&gt;Theseus&#x27;s libc implementation is called &lt;code&gt;tlibc&lt;/code&gt;. which is described in &lt;a href&#x3D;&quot;https://www.theseus-os.com/Theseus/book/c/programs.html&quot;&gt;this book chapter&lt;/a&gt;.
 So far it has been loosely based on the Redox project&#x27;s &lt;code&gt;relibc&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Our efforts of late were focused on supporting &lt;code&gt;mmap&lt;/code&gt; for POSIX-style memory mappings, which Theseus has traditionally eschewed because they are unsafe and poorly-designed from a state management perspective&lt;sup class&#x3D;&quot;footnote-ref&quot;&gt;&lt;a href&#x3D;&quot;#fn1&quot; id&#x3D;&quot;fnref1&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;.
-In the future, we also may support POSIX-style signal handlers, but for now we have chosen to re-implement &lt;code&gt;wasmtime&lt;/code&gt;&#x27;s signal handling directly in safe Rust atop Theseus rather than going through an unsafe &lt;code&gt;libc&lt;/code&gt; FFI boundary for no good reason.&lt;/p&gt;
+In the future, we also may support POSIX-style signal handlers, but for now we have chosen to re-implement Wasmtime&#x27;s signal handling directly in safe Rust atop Theseus rather than going through an unsafe &lt;code&gt;libc&lt;/code&gt; FFI boundary for no good reason.&lt;/p&gt;
 &lt;p&gt;The bulk of the &lt;code&gt;mmap&lt;/code&gt; implemenation for &lt;code&gt;tlibc&lt;/code&gt; was added in &lt;a href&#x3D;&quot;https://github.com/theseus-os/Theseus/commit/fffda853e71b5a0d7b20b850297962227e592850&quot;&gt;commit fffda85&lt;/a&gt;.
 The key aspects of this are:&lt;/p&gt;
 &lt;ul&gt;
@@ -928,7 +928,7 @@ Presto-magic-change-o, these extra files will be automatically loaded into These
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src&#x3D;&quot;/images/2022-posts/exorbitant-wasm.png&quot; alt&#x3D;&quot;exorbitant demo&quot; /&gt;&lt;/p&gt;
 &lt;hr /&gt;
-&lt;p&gt;Our work on &lt;code&gt;wasmtime&lt;/code&gt; atop Theseus is still ongoing. Please check back for more updates soon!&lt;/p&gt;
+&lt;p&gt;Our work on Wasmtime atop Theseus is still ongoing. Please check back for more updates soon!&lt;/p&gt;
 </content>
 
         <author>
@@ -1019,9 +1019,9 @@ In the mean time, you can follow its progress in &lt;a href&#x3D;&quot;https://g
 &lt;p&gt;Second, a simple version of &lt;code&gt;grep&lt;/code&gt; version 2.0 compiled to WASM, which demonstrates using WASI&#x27;s filesystem I/O interface.
 &lt;img src&#x3D;&quot;/images/2021-posts/wgrep.png&quot; alt&#x3D;&quot;grep&quot; /&gt;&lt;/p&gt;
 &lt;p&gt;Once WASM support is officially in the main branch, we will offer an easier command line interface for loading and executing WASM binaries.&lt;/p&gt;
-&lt;h2&gt;&lt;a href&#x3D;&quot;#progress-on-porting-wasmtime-to-theseus&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;progress-on-porting-wasmtime-to-theseus&quot;&gt;&lt;/a&gt;Progress on Porting &lt;code&gt;wasmtime&lt;/code&gt; to Theseus&lt;/h2&gt;
-&lt;p&gt;While the interpreted WASM project is wrapping up, the port of &lt;code&gt;wasmtime&lt;/code&gt; is just getting started.&lt;/p&gt;
-&lt;p&gt;As described in &lt;a href&#x3D;&quot;https://docs.wasmtime.dev/contributing-architecture.html&quot;&gt;&lt;code&gt;wasmtime&lt;/code&gt;&#x27;s documentation&lt;/a&gt;, the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
+&lt;h2&gt;&lt;a href&#x3D;&quot;#progress-on-porting-wasmtime-to-theseus&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;progress-on-porting-wasmtime-to-theseus&quot;&gt;&lt;/a&gt;Progress on Porting Wasmtime to Theseus&lt;/h2&gt;
+&lt;p&gt;While the interpreted WASM project is wrapping up, the port of Wasmtime is just getting started.&lt;/p&gt;
+&lt;p&gt;As described in &lt;a href&#x3D;&quot;https://docs.wasmtime.dev/contributing-architecture.html&quot;&gt;Wasmtime&#x27;s documentation&lt;/a&gt;, the project is architected as one top-level user-facing crate that re-exports and connects together key functionality from several smaller internal crates.
 The top-level crate is aptly named &lt;code&gt;wasmtime&lt;/code&gt;, and it primarily exposes a safe API for interacting with WASM modules, e.g., compiling, instantiating, and invoking them.&lt;/p&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#bottom-up-approach----off-to-a-strong-start&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;bottom-up-approach----off-to-a-strong-start&quot;&gt;&lt;/a&gt;Bottom-up approach -- off to a strong start&lt;/h3&gt;
 &lt;p&gt;We have taken a bottom-up approach such that we can iteratively port each crate to the Theseus environment, building and testing them as we go.
@@ -1047,7 +1047,7 @@ So far, we have been able to quickly adapt the following bottom-most crates (sho
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3&gt;&lt;a href&#x3D;&quot;#looking-forward-in-wasmtime&quot; aria-hidden&#x3D;&quot;true&quot; class&#x3D;&quot;anchor&quot; id&#x3D;&quot;looking-forward-in-wasmtime&quot;&gt;&lt;/a&gt;Looking forward in (wasm)time&lt;/h3&gt;
-&lt;p&gt;The main challenge in porting &lt;code&gt;wasmtime&lt;/code&gt; to Theseus is porting the &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
+&lt;p&gt;The main challenge in porting Wasmtime to Theseus is porting the &lt;code&gt;wasmtime-runtime&lt;/code&gt; crate, which implements the majority of the runtime logic for executing WASM binaries atop a given host platform.
 This crate is massive and will likely take months to complete, due to its many dependencies and robust usage of standard POSIX-like functionality that Theseus currently lacks.&lt;/p&gt;
 &lt;p&gt;We&#x27;ll start by tackling the main dependencies of &lt;code&gt;wasmtime-runtime&lt;/code&gt;, most of which are based around legacy POSIX-style interfaces and traditional OS platform abstractions:&lt;/p&gt;
 &lt;ul&gt;
@@ -1101,7 +1101,7 @@ This will also make it significantly easier to run legacy components with comple
 &lt;li&gt;We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus&#x27;s subsystems&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;The complex approach: port the &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime&quot;&gt;&lt;code&gt;wasmtime&lt;/code&gt; WASM runtime project&lt;/a&gt; to Theseus
+&lt;li&gt;The complex approach: port the &lt;a href&#x3D;&quot;https://github.com/bytecodealliance/wasmtime&quot;&gt;Wasmtime WASM runtime project&lt;/a&gt; to Theseus
 &lt;ul&gt;
 &lt;li&gt;Massively complex with dozens of platform-specific logic and API calls&lt;/li&gt;
 &lt;li&gt;Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features&lt;/li&gt;
@@ -1110,7 +1110,7 @@ This will also make it significantly easier to run legacy components with comple
 &lt;/ol&gt;
 &lt;p&gt;&lt;a href&#x3D;&quot;https://github.com/vikrammullick&quot;&gt;Vikram Mullick&lt;/a&gt; has begun working on part 1 above as part of his senior capstone project at Yale.
 &lt;a href&#x3D;&quot;https://github.com/kevinaboos&quot;&gt;Kevin Boos&lt;/a&gt; has begun working on part 2 above, and will also assist with part 1 as needed.&lt;/p&gt;
-&lt;p&gt;Due to the complex nature of &lt;code&gt;wasmtime&lt;/code&gt; with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:&lt;/p&gt;
+&lt;p&gt;Due to the complex nature of Wasmtime with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Theseus can &amp;quot;quickly&amp;quot; get up and running with basic WASM support, allowing us to:
 &lt;ul&gt;
@@ -1119,7 +1119,7 @@ This will also make it significantly easier to run legacy components with comple
 &lt;li&gt;Integrate Theseus&#x27;s existing runtime loading and linking infrastructure with WASM&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;We can leverage the existing WASM and WASI infrastructure layers to more easily support &lt;code&gt;wasmtime&lt;/code&gt;
+&lt;li&gt;We can leverage the existing WASM and WASI infrastructure layers to more easily support Wasmtime
 &lt;ul&gt;
 &lt;li&gt;This will realize a ~10x performance improvement over the initial &lt;code&gt;wasmi&lt;/code&gt;, without wasting the initial &lt;code&gt;wasmi&lt;/code&gt;-based efforts&lt;/li&gt;
 &lt;/ul&gt;

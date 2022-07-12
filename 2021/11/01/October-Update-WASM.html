@@ -37,7 +37,7 @@
   <div class="brand flex-auto w-100 w-auto-l self-start tc tl-l">
     <a href="/">
       <img class="v-mid ml0-l" alt="Theseus OS Logo" src="/images/theseus_ship.jpg">
-      <span style="font-weight: 100;" class="dib ml1 ml0-l">Theseus OS Blog</span>
+      <span style="font-weight: 150;" class="dib ml1 ml0-l">Theseus OS Blog</span>
     </a>
   </div>
 
@@ -71,7 +71,7 @@
 </nav>
 
 <section id="October 2021 Update: All about WASM" class="white">
-  <div class="w-100 mw-none ph3 mw8-m mw8-l center f3">
+  <div class="w-100 mw-none ph3 mw85-m mw85-l center f3">
     <header>
       <h2>October 2021 Update: All about WASM</h2>
       <div class="highlight mt2 mb3"></div>
@@ -105,7 +105,7 @@ This will also make it significantly easier to run legacy components with comple
 <li>We can implement WASI system calls as needed, which acts as the glue is the glue between the WASM environment and the rest of Theseus's subsystems</li>
 </ul>
 </li>
-<li>The complex approach: port the <a href="https://github.com/bytecodealliance/wasmtime"><code>wasmtime</code> WASM runtime project</a> to Theseus
+<li>The complex approach: port the <a href="https://github.com/bytecodealliance/wasmtime">Wasmtime WASM runtime project</a> to Theseus
 <ul>
 <li>Massively complex with dozens of platform-specific logic and API calls</li>
 <li>Tons of legacy dependencies, e.g., libc- and POSIX-style memory management, signal handling, system calls, and usage of many Rust libstd features</li>
@@ -114,7 +114,7 @@ This will also make it significantly easier to run legacy components with comple
 </ol>
 <p><a href="https://github.com/vikrammullick">Vikram Mullick</a> has begun working on part 1 above as part of his senior capstone project at Yale.
 <a href="https://github.com/kevinaboos">Kevin Boos</a> has begun working on part 2 above, and will also assist with part 1 as needed.</p>
-<p>Due to the complex nature of <code>wasmtime</code> with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:</p>
+<p>Due to the complex nature of Wasmtime with its many legacy dependencies, this two-pronged split approach is quite beneficial, giving us the best of both worlds:</p>
 <ul>
 <li>Theseus can &quot;quickly&quot; get up and running with basic WASM support, allowing us to:
 <ul>
@@ -123,7 +123,7 @@ This will also make it significantly easier to run legacy components with comple
 <li>Integrate Theseus's existing runtime loading and linking infrastructure with WASM</li>
 </ul>
 </li>
-<li>We can leverage the existing WASM and WASI infrastructure layers to more easily support <code>wasmtime</code>
+<li>We can leverage the existing WASM and WASI infrastructure layers to more easily support Wasmtime
 <ul>
 <li>This will realize a ~10x performance improvement over the initial <code>wasmi</code>, without wasting the initial <code>wasmi</code>-based efforts</li>
 </ul>
