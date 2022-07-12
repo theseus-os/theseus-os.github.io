@@ -53,7 +53,7 @@ As described in [Wasmtime's documentation](https://docs.wasmtime.dev/contributin
 * `wasmtime-runtime`: implements the majority of the runtime logic for executing WASM binaries atop of a give host platform
 * `wasmtime-environ`: standalone abstract definitions of core WASM concepts and environment types, enabling integration with the cranelift backend
 * `wasmtime-types`: definitions for core WASM types and execution concepts
-* `wasmparser`: an external (non-Wasmtime) tool for parsing WASM binaries
+* `wasmparser`[^1]: an external (non-Wasmtime) tool for parsing WASM binaries
 <!-- * `cranelift-entity`: core data structures used by the Cranelift code generator   -->
 
 
@@ -300,6 +300,6 @@ fn hello(cwasm_file_contents: &[u8]) -> Result<...> {
 
 If all goes according to plan, you'll see the expected output below:
 
-<img align="left" src="/images/2022-posts/test_wasmtime_screenshot.png" alt="wasmtime on Theseus screenshot" width="500"/>
+<img style="margin:4px" align="left" src="/images/2022-posts/test_wasmtime_screenshot.png" alt="wasmtime on Theseus screenshot" width="500"/>
 
 <br clear="all">

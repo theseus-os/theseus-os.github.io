@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "More progress porting wasmtime to Theseus"
+title: "More progress porting Wasmtime to Theseus"
 author: Kevin Boos <https://github.com/kevinaboos>
 release: false
 ---

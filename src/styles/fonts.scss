@@ -107,13 +107,13 @@ $format-names: (
 }
 
 @include declare-font-faces(
-  $family: 'Alfa Slab One',
-  $base-filename: 'AlfaSlabOne',
+  $family: 'Patua One',
+  $base-filename: 'PatuaOne',
   $weights: 400,
   $font-weight-override: 800,
   $styles: normal,
-  $ranges: latin latin-ext vietnamese,
-  $formats: woff2 woff,
+  $ranges: latin,
+  $formats: woff2,
 );
 
 @include declare-font-faces(

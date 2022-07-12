@@ -1,7 +1,7 @@
 @import 'tachyons-ext';
 
 $body-font: 'Fira Sans', Helvetica, Arial, sans-serif;
-$header-font: 'Alfa Slab One', serif;
+$header-font: 'Patua One', serif;
 
 $gray: #13394b;
 $red: #a72145;
@@ -114,7 +114,7 @@ div.brand {
 
   color: $gray;
   font-family: $header-font;
-  font-size: 3rem;
+  font-size: 3.5rem;
   text-decoration: none;
   margin-top: $v-top;
 
@@ -156,6 +156,7 @@ div.brand {
     }
   }
   code {
+    font-size: 0.9em;
     color: black;
     background-color: rgba($gray, 0.05);
     border: 1px solid rgba($gray, 0.25);
@@ -264,6 +265,7 @@ footer .attribution {
 
 h3, .post h2, header h2 {
   display: inline-block;
+  font-family: $header-font;
   font-weight: 800;
   font-size: 1.8em;
   letter-spacing: normal;
@@ -271,6 +273,7 @@ h3, .post h2, header h2 {
 
 h4 {
   display: inline-block;
+  font-family: $header-font;
   font-weight: 800;
   font-size: 1.6em;
   letter-spacing: normal;
@@ -278,11 +281,13 @@ h4 {
 
 .post {
   h2 {
-    font-size: 2em;
+  font-family: $header-font;
+  font-size: 2em;
   }
   
   h3 {
     display: block;
+    font-family: $header-font;
   }
 
   img {
@@ -303,6 +308,7 @@ h4 {
 
 header h1 {
   letter-spacing: 1px;
+  font-family: $header-font;
 }
 
 
