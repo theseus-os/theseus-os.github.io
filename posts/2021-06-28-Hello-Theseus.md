@@ -27,7 +27,7 @@ As such, the current state of Theseus is a strange (im)balance between:
    * Fully-safe memory management for arbitrary memory regions
    * Compiler-assisted resource and state management
    * Dynamic loading and linking of system components at runtime
-   * Full cuustom unwinding from high-level applications to low-level kernel entities
+   * Full custom unwinding from high-level applications to low-level kernel entities
    * Robust fault tolerance with a tiny core dependency set 
    * Live evolution of components at any layer/level of the system
  * 🙁 More "basic" features that are missing:
@@ -48,7 +48,7 @@ We'll now focus on proving that Theseus can be useful in real-world environments
  That being said, researchers at Yale University will continue to use Theseus as a foundation for novel OS research, and their contributions may be featured here as well, when appropriate.
 
 ## Funding from Futurewei
-Since being published in the [SOSP 2020 conference](https://www.usenix.org/conference/osdi20/presentation/boos), Theseus has garnered a lot of interest from both fellow academic institutions as well as industry researchers.
+Since being published in the [OSDI 2020 conference](https://www.usenix.org/conference/osdi20/presentation/boos), Theseus has garnered a lot of interest from both fellow academic institutions as well as industry researchers.
 Among the interested parties was [Futurewei Technologies](https://futurewei.com/), who reached out to our research lab at Yale University (previously at Rice University) to inquire about the future of Theseus and to determine whether it could prove useful for various important domains, such as automotive computing.
 
 Futurewei graciously offered to fund me (Kevin Boos), the creator of Theseus, to work on Theseus in a full-time capacity.
